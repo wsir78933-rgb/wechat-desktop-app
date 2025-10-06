@@ -3,7 +3,7 @@
  * 功能：抓取微信公众号文章内容
  */
 
-import axios, { AxiosRequestConfig } from 'axios';
+import { net } from 'electron';
 import * as cheerio from 'cheerio';
 
 /**
@@ -175,23 +175,57 @@ export class WechatScraper {
       // 确保请求间隔
       await this.ensureRequestInterval();
 
-      // 配置请求
-      const config: AxiosRequestConfig = {
-        headers: {
-          'User-Agent': getRandomUserAgent(),
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1'
-        },
-        timeout: this.config.timeout,
-        maxRedirects: 5,
-        validateStatus: (status) => status >= 200 && status < 400
-      };
+      // 使用 Electron net 模块发送请求
+      const request = net.request({
+        method: 'GET',
+        url: url,
+        redirect: 'follow'
+      });
 
-      const response = await axios.get(url, config);
-      return response.data;
+      // 设置请求头
+      request.setHeader('User-Agent', getRandomUserAgent());
+      request.setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
+      request.setHeader('Accept-Language', 'zh-CN,zh;q=0.9,en;q=0.8');
+      request.setHeader('Connection', 'keep-alive');
+
+      // 返回 Promise
+      return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+
+        request.on('response', (response) => {
+          const statusCode = response.statusCode;
+
+          if (statusCode < 200 || statusCode >= 400) {
+            reject(new Error(`HTTP ${statusCode}`));
+            return;
+          }
+
+          response.on('data', (chunk) => {
+            chunks.push(Buffer.from(chunk));
+          });
+
+          response.on('end', () => {
+            const html = Buffer.concat(chunks).toString('utf-8');
+            resolve(html);
+          });
+
+          response.on('error', (error) => {
+            reject(error);
+          });
+        });
+
+        request.on('error', (error) => {
+          reject(error);
+        });
+
+        // 设置超时
+        setTimeout(() => {
+          request.abort();
+          reject(new Error('请求超时'));
+        }, this.config.timeout);
+
+        request.end();
+      });
 
     } catch (error: any) {
       // 判断是否需要重试
