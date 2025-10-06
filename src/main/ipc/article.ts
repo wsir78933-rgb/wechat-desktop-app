@@ -24,7 +24,7 @@ import { WechatScraper } from '../scrapers/wechat';
  */
 export function registerArticleHandlers() {
   // ============= 文章采集 =============
-  ipcMain.handle(IPC_CHANNELS.ARTICLE_SCRAPE, async (_event, params: any): Promise<ScrapeResult> => {
+  ipcMain.handle(IPC_CHANNELS.ARTICLE_SCRAPE, async (_event, params: ScrapeParams): Promise<ScrapeResult> => {
     console.log('[IPC] 开始采集文章:', params);
 
     try {
