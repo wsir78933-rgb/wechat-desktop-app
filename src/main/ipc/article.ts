@@ -16,7 +16,7 @@ import type {
 
 // 导入数据库操作模块 (待实现)
 // import { ArticleDatabase } from '../database/article';
-// import { WechatScraper } from '../scrapers/wechat';
+import { WechatScraper } from '../scrapers/wechat';
 // import { ArticleExporter } from '../utils/exporter';
 
 /**
@@ -24,54 +24,84 @@ import type {
  */
 export function registerArticleHandlers() {
   // ============= 文章采集 =============
-  ipcMain.handle(IPC_CHANNELS.ARTICLE_SCRAPE, async (_event, params: ScrapeParams): Promise<ScrapeResult> => {
+  ipcMain.handle(IPC_CHANNELS.ARTICLE_SCRAPE, async (_event, params: any): Promise<ScrapeResult> => {
     console.log('[IPC] 开始采集文章:', params);
 
     try {
       const mainWindow = BrowserWindow.getAllWindows()[0];
 
-      // 模拟采集进度（实际应由scraper模块发送）
+      // 发送采集进度
       const sendProgress = (progress: ScrapeProgress) => {
         if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.webContents.send(IPC_CHANNELS.ARTICLE_SCRAPE_PROGRESS, progress);
         }
       };
 
-      // TODO: 实际采集逻辑
-      // const scraper = new WechatScraper();
-      // const articles = await scraper.scrape(params, sendProgress);
-      // const db = new ArticleDatabase();
-      // await db.batchInsert(articles);
+      // 适配前端参数格式: { urls: string[], tagIds: number[] }
+      const urls = params.urls || [params.url];
+      const articles: Article[] = [];
 
-      // 模拟数据（开发阶段）
       sendProgress({
         current: 0,
-        total: 10,
-        currentArticle: '正在初始化...',
+        total: urls.length,
+        currentArticle: '正在初始化爬虫...',
         status: 'processing',
       });
 
-      const mockArticles: Article[] = Array.from({ length: 5 }, (_, i) => ({
-        id: Date.now() + i,
-        title: `测试文章 ${i + 1}`,
-        author: params.accountName,
-        publishDate: new Date().toISOString(),
-        content: `这是测试文章内容 ${i + 1}`,
-        url: `${params.url}/article/${i + 1}`,
-        tags: ['测试', '开发'],
-      }));
+      const scraper = new WechatScraper();
+
+      // 遍历所有URL进行采集
+      for (let i = 0; i < urls.length; i++) {
+        const url = urls[i];
+
+        sendProgress({
+          current: i,
+          total: urls.length,
+          currentArticle: `正在抓取第 ${i + 1}/${urls.length} 篇文章...`,
+          status: 'processing',
+        });
+
+        try {
+          const scrapeResult = await scraper.scrapeArticle(url);
+
+          if (scrapeResult.success && scrapeResult.data) {
+            // 转换爬虫数据格式为应用数据格式
+            const article: Article = {
+              id: Date.now() + i,
+              title: scrapeResult.data.title,
+              author: scrapeResult.data.author || params.accountName || '未知作者',
+              publishDate: scrapeResult.data.publishTime,
+              content: scrapeResult.data.content || scrapeResult.data.summary,
+              url: scrapeResult.data.url,
+              tags: ['公众号'],
+            };
+
+            articles.push(article);
+            console.log(`[IPC] ✅ 文章采集成功: ${article.title}`);
+          } else {
+            console.error(`[IPC] ❌ 文章采集失败: ${url}`, scrapeResult.error);
+          }
+        } catch (error) {
+          console.error(`[IPC] ❌ 文章采集异常: ${url}`, error);
+        }
+      }
+
+      // TODO: 保存到数据库
+      // const db = new ArticleDatabase();
+      // await db.batchInsert(articles);
 
       sendProgress({
-        current: 5,
-        total: 5,
-        currentArticle: '采集完成',
+        current: urls.length,
+        total: urls.length,
+        currentArticle: `采集完成，成功 ${articles.length}/${urls.length} 篇`,
         status: 'completed',
       });
 
       return {
-        success: true,
-        articles: mockArticles,
-        total: mockArticles.length,
+        success: articles.length > 0,
+        articles: articles,
+        total: articles.length,
+        error: articles.length === 0 ? '所有文章采集失败' : undefined,
       };
     } catch (error) {
       console.error('[IPC] 文章采集失败:', error);
