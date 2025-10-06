@@ -3,7 +3,7 @@
  * 使用纯CSS和SVG实现基础图表，无需外部依赖
  */
 import React from 'react';
-import { ChartViewProps, ChartDataPoint } from '../../types/ui';
+import type { ChartViewProps } from '../../types/ui';
 
 const ChartView: React.FC<ChartViewProps> = ({
   data,

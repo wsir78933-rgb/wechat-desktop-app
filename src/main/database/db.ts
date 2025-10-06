@@ -116,8 +116,9 @@ export function backupDatabase(backupPath: string): void {
   const database = getDatabase();
   const backup = database.backup(backupPath);
 
-  backup.step(-1); // 一次性完成备份
-  backup.close();
+  // better-sqlite3 的 backup 方法是同步的
+  (backup as any).step(-1); // 一次性完成备份
+  (backup as any).close();
 
   console.log(`Database backed up to: ${backupPath}`);
 }

@@ -8,7 +8,7 @@ import { WechatScraper } from './wechat';
 /**
  * 测试URL（请替换为真实的文章URL）
  */
-const TEST_URLS = [
+const TEST_URLS: string[] = [
   // 'https://mp.weixin.qq.com/s/xxxxxxxxxxxxx',
   // 添加更多测试URL
 ];

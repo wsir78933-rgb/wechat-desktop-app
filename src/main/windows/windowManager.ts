@@ -1,4 +1,4 @@
-import { ipcMain, IpcMainEvent } from 'electron';
+import { ipcMain } from 'electron';
 import { mainWindow } from './mainWindow';
 import { floatWindow } from './floatWindow';
 

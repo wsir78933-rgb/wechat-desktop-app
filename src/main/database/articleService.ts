@@ -1,5 +1,5 @@
 import { getDatabase, runTransaction } from './db';
-import type { Database } from 'better-sqlite3';
+import Database from 'better-sqlite3';
 
 /**
  * 文章数据接口

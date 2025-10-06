@@ -101,6 +101,21 @@ export interface Statistics {
   topAuthors: Array<{ name: string; count: number }>;
 }
 
+// ============= 窗口相关类型 =============
+export interface WindowPosition {
+  x: number;
+  y: number;
+}
+
+export interface WindowSize {
+  width: number;
+  height: number;
+}
+
+export interface WindowBounds extends WindowPosition, WindowSize {}
+
+export type WindowType = 'main' | 'float';
+
 // ============= IPC通道定义 =============
 export const IPC_CHANNELS = {
   // 文章相关
@@ -130,6 +145,19 @@ export const IPC_CHANNELS = {
   // 系统相关
   SYSTEM_GET_PATH: 'system:getPath',
   SYSTEM_OPEN_EXTERNAL: 'system:openExternal',
+
+  // 窗口相关
+  WINDOW_MINIMIZE: 'window:minimize',
+  WINDOW_CLOSE: 'window:close',
+  WINDOW_TOGGLE_ALWAYS_ON_TOP: 'window:toggleAlwaysOnTop',
+  WINDOW_GET_POSITION: 'window:getPosition',
+  WINDOW_SET_POSITION: 'window:setPosition',
+  WINDOW_GET_SIZE: 'window:getSize',
+  WINDOW_SET_SIZE: 'window:setSize',
+  WINDOW_OPEN_MAIN: 'window:openMain',
+  WINDOW_SHOW_FLOAT: 'window:showFloat',
+  WINDOW_HIDE_FLOAT: 'window:hideFloat',
+  WINDOW_TOGGLE_FLOAT: 'window:toggleFloat',
 } as const;
 
 // ============= IPC API接口定义 =============
@@ -161,11 +189,27 @@ export interface IpcApi {
   // 系统相关
   getSystemPath: (name: string) => Promise<string>;
   openExternal: (url: string) => Promise<void>;
+
+  // 窗口相关
+  window: {
+    minimize: (windowType?: WindowType) => Promise<void>;
+    close: (windowType?: WindowType) => Promise<void>;
+    toggleAlwaysOnTop: (windowType?: WindowType) => Promise<boolean>;
+    getPosition: (windowType?: WindowType) => Promise<WindowPosition>;
+    setPosition: (windowType: WindowType, x: number, y: number) => Promise<void>;
+    getSize: (windowType?: WindowType) => Promise<WindowSize>;
+    setSize: (windowType: WindowType, width: number, height: number) => Promise<void>;
+    openMain: (articleId?: number) => Promise<void>;
+    showFloat: () => Promise<void>;
+    hideFloat: () => Promise<void>;
+    toggleFloat: () => Promise<void>;
+  };
 }
 
-// 扩展Window接口
+// 扩展Window接口 - 主窗口版本
+// 注意：悬浮窗使用不同的类型定义（见 src/renderer/src/types/index.ts）
 declare global {
   interface Window {
-    api: IpcApi;
+    api: IpcApi | import('../renderer/src/types').WindowAPI;
   }
 }

@@ -27,6 +27,7 @@ export type CollectStatus = 'idle' | 'loading' | 'success' | 'error';
 
 /**
  * 窗口API类型定义（用于悬浮窗）
+ * 注意：此类型与主窗口的IpcApi类型冲突，已在src/types/ipc.ts中统一定义为联合类型
  */
 export interface WindowAPI {
   minimize: () => void;
@@ -38,10 +39,4 @@ export interface WindowAPI {
   openMainWindow: (articleId?: string) => void;
   getWindowPosition: () => Promise<WindowPosition>;
   setWindowPosition: (position: WindowPosition) => void;
-}
-
-declare global {
-  interface Window {
-    api: WindowAPI;
-  }
 }

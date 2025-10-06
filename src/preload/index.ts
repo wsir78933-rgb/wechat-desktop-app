@@ -12,7 +12,7 @@ import type { IpcApi } from '../types/ipc';
  * 允许的IPC通道白名单
  * 只有在白名单中的通道才能被调用
  */
-const ALLOWED_CHANNELS = Object.values(IPC_CHANNELS);
+const ALLOWED_CHANNELS = Object.values(IPC_CHANNELS) as string[];
 
 /**
  * 验证通道是否在白名单中
@@ -43,17 +43,6 @@ function safeOn(channel: string, callback: (...args: any[]) => void): void {
   }
 
   ipcRenderer.on(channel, (_event, ...args) => callback(...args));
-}
-
-/**
- * 移除IPC监听器
- */
-function safeOff(channel: string, callback: (...args: any[]) => void): void {
-  if (!isValidChannel(channel)) {
-    return;
-  }
-
-  ipcRenderer.removeListener(channel, callback);
 }
 
 // ============= 暴露安全的API到渲染进程 =============
@@ -151,6 +140,64 @@ const api: IpcApi = {
   openExternal: (url) => {
     console.log('[Preload] 调用: openExternal', url);
     return safeInvoke(IPC_CHANNELS.SYSTEM_OPEN_EXTERNAL, url);
+  },
+
+  // ============= 窗口相关API =============
+  window: {
+    minimize: (windowType) => {
+      console.log('[Preload] 调用: window.minimize', windowType);
+      return safeInvoke(IPC_CHANNELS.WINDOW_MINIMIZE, windowType);
+    },
+
+    close: (windowType) => {
+      console.log('[Preload] 调用: window.close', windowType);
+      return safeInvoke(IPC_CHANNELS.WINDOW_CLOSE, windowType);
+    },
+
+    toggleAlwaysOnTop: (windowType) => {
+      console.log('[Preload] 调用: window.toggleAlwaysOnTop', windowType);
+      return safeInvoke(IPC_CHANNELS.WINDOW_TOGGLE_ALWAYS_ON_TOP, windowType);
+    },
+
+    getPosition: (windowType) => {
+      console.log('[Preload] 调用: window.getPosition', windowType);
+      return safeInvoke(IPC_CHANNELS.WINDOW_GET_POSITION, windowType);
+    },
+
+    setPosition: (windowType, x, y) => {
+      console.log('[Preload] 调用: window.setPosition', { windowType, x, y });
+      return safeInvoke(IPC_CHANNELS.WINDOW_SET_POSITION, windowType, x, y);
+    },
+
+    getSize: (windowType) => {
+      console.log('[Preload] 调用: window.getSize', windowType);
+      return safeInvoke(IPC_CHANNELS.WINDOW_GET_SIZE, windowType);
+    },
+
+    setSize: (windowType, width, height) => {
+      console.log('[Preload] 调用: window.setSize', { windowType, width, height });
+      return safeInvoke(IPC_CHANNELS.WINDOW_SET_SIZE, windowType, width, height);
+    },
+
+    openMain: (articleId) => {
+      console.log('[Preload] 调用: window.openMain', articleId);
+      return safeInvoke(IPC_CHANNELS.WINDOW_OPEN_MAIN, articleId);
+    },
+
+    showFloat: () => {
+      console.log('[Preload] 调用: window.showFloat');
+      return safeInvoke(IPC_CHANNELS.WINDOW_SHOW_FLOAT);
+    },
+
+    hideFloat: () => {
+      console.log('[Preload] 调用: window.hideFloat');
+      return safeInvoke(IPC_CHANNELS.WINDOW_HIDE_FLOAT);
+    },
+
+    toggleFloat: () => {
+      console.log('[Preload] 调用: window.toggleFloat');
+      return safeInvoke(IPC_CHANNELS.WINDOW_TOGGLE_FLOAT);
+    },
   },
 };
 

@@ -5,7 +5,6 @@
 
 import { ipcMain, shell, app } from 'electron';
 import { IPC_CHANNELS } from '../../types/ipc';
-import * as path from 'path';
 
 /**
  * 注册系统相关的IPC处理器

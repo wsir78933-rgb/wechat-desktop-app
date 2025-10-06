@@ -1,5 +1,5 @@
 import { getDatabase } from './db';
-import type { Database } from 'better-sqlite3';
+import Database from 'better-sqlite3';
 import type { Article, PaginatedResult } from './articleService';
 
 /**

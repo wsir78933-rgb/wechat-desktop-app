@@ -1,3 +1,4 @@
+/// <reference types="./float-window.d.ts" />
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import FloatApp from './FloatApp'

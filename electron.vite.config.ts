@@ -33,7 +33,10 @@ export default defineConfig({
     build: {
       rollupOptions: {
         input: {
-          index: resolve(__dirname, 'src/renderer/index.html')
+          // 主窗口页面
+          index: resolve(__dirname, 'src/renderer/index.html'),
+          // 悬浮窗页面
+          float: resolve(__dirname, 'src/renderer/float.html')
         }
       }
     }

@@ -124,7 +124,6 @@ export function registerSearchHandlers() {
 
       // 模拟统计数据
       const now = new Date();
-      const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const thisWeekStart = new Date(now);
       thisWeekStart.setDate(now.getDate() - now.getDay());
 

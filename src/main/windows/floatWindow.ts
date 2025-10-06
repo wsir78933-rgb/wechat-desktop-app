@@ -1,12 +1,13 @@
 import { BrowserWindow, screen } from 'electron';
 import * as path from 'path';
+import { configStore } from '../config/store';
 
 /**
  * 悬浮窗配置和管理
  */
 export class FloatWindow {
   private window: BrowserWindow | null = null;
-  private isDragging: boolean = false;
+  private savePositionTimer: NodeJS.Timeout | null = null;
 
   /**
    * 获取悬浮窗实例
@@ -23,11 +24,21 @@ export class FloatWindow {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
 
-    // 计算默认位置（屏幕右侧，垂直居中）
-    const windowWidth = 400;
-    const windowHeight = 600;
-    const x = width - windowWidth - 20; // 距离右边20px
-    const y = Math.floor((height - windowHeight) / 2);
+    // 从配置中恢复位置和大小，如果没有则使用默认值
+    const savedState = configStore.getFloatWindowState();
+    const savedPosition = savedState.position;
+
+    // 默认位置（屏幕右侧，垂直居中）
+    const defaultWidth = 400;
+    const defaultHeight = 600;
+    const defaultX = width - defaultWidth - 20; // 距离右边20px
+    const defaultY = Math.floor((height - defaultHeight) / 2);
+
+    // 使用保存的值或默认值
+    const windowWidth = savedPosition.width || defaultWidth;
+    const windowHeight = savedPosition.height || defaultHeight;
+    const x = savedPosition.x || defaultX;
+    const y = savedPosition.y || defaultY;
 
     // 创建悬浮窗
     this.window = new BrowserWindow({
@@ -42,13 +53,13 @@ export class FloatWindow {
       show: false, // 初始不显示
       frame: false, // 无边框窗口
       transparent: true, // 透明背景
-      alwaysOnTop: true, // 始终置顶
+      alwaysOnTop: savedState.alwaysOnTop, // 从配置恢复置顶状态
       skipTaskbar: true, // 不在任务栏显示
       resizable: true, // 可调整大小
       hasShadow: true, // 显示阴影
       backgroundColor: '#00000000', // 完全透明背景
       webPreferences: {
-        preload: path.join(__dirname, '../preload/preload.js'),
+        preload: path.join(__dirname, '../preload/index.js'),
         contextIsolation: true, // 启用上下文隔离
         nodeIntegration: false, // 禁用Node集成
         sandbox: false, // 允许preload脚本访问Node.js API
@@ -58,6 +69,11 @@ export class FloatWindow {
       titleBarStyle: 'hidden',
       visualEffectState: 'active',
     });
+
+    // 设置透明度
+    if (savedState.opacity) {
+      this.window.setOpacity(savedState.opacity);
+    }
 
     // 设置窗口可拖拽
     this.setupDraggable();
@@ -78,12 +94,14 @@ export class FloatWindow {
     if (!this.window) return;
 
     // 监听窗口移动事件
-    this.window.on('will-move', (event) => {
-      this.isDragging = true;
+    this.window.on('will-move', () => {
+      // 窗口开始移动
+      console.log('[FloatWindow] 窗口开始移动');
     });
 
     this.window.on('moved', () => {
-      this.isDragging = false;
+      // 窗口移动结束
+      console.log('[FloatWindow] 窗口移动结束');
     });
   }
 
@@ -103,30 +121,65 @@ export class FloatWindow {
 
     // 窗口关闭时
     this.window.on('closed', () => {
+      // 清理定时器
+      if (this.savePositionTimer) {
+        clearTimeout(this.savePositionTimer);
+        this.savePositionTimer = null;
+      }
       this.window = null;
     });
 
     // 失去焦点时（可选：自动隐藏或保持显示）
     this.window.on('blur', () => {
-      console.log('悬浮窗失去焦点');
+      console.log('[FloatWindow] 失去焦点');
       // 可根据需求决定是否自动隐藏
       // this.hide();
     });
 
-    // 窗口大小改变时
+    // 窗口移动时保存位置（防抖）
+    this.window.on('moved', () => {
+      this.savePositionDebounced();
+    });
+
+    // 窗口大小改变时保存位置和大小（防抖）
     this.window.on('resize', () => {
-      const [width, height] = this.window?.getSize() || [0, 0];
-      console.log(`悬浮窗大小改变: ${width}x${height}`);
+      this.savePositionDebounced();
     });
 
     // 监听鼠标进入和离开
     this.window.on('enter-full-screen', () => {
-      console.log('悬浮窗进入全屏');
+      console.log('[FloatWindow] 进入全屏');
     });
 
     this.window.on('leave-full-screen', () => {
-      console.log('悬浮窗退出全屏');
+      console.log('[FloatWindow] 退出全屏');
     });
+  }
+
+  /**
+   * 防抖保存位置
+   */
+  private savePositionDebounced(): void {
+    if (this.savePositionTimer) {
+      clearTimeout(this.savePositionTimer);
+    }
+
+    this.savePositionTimer = setTimeout(() => {
+      this.savePosition();
+    }, 500); // 500ms后保存
+  }
+
+  /**
+   * 保存窗口位置和大小
+   */
+  private savePosition(): void {
+    if (!this.window || this.window.isDestroyed()) return;
+
+    const [x, y] = this.window.getPosition();
+    const [width, height] = this.window.getSize();
+
+    configStore.setFloatWindowPosition({ x, y, width, height });
+    console.log(`[FloatWindow] 位置已保存: x=${x}, y=${y}, width=${width}, height=${height}`);
   }
 
   /**
@@ -136,13 +189,18 @@ export class FloatWindow {
     if (!this.window) return;
 
     if (process.env.NODE_ENV === 'development') {
-      // 开发环境加载开发服务器（悬浮窗专用页面）
-      this.window.loadURL('http://localhost:3000/float');
+      // 开发环境：使用Vite开发服务器
+      const rendererUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+      const floatUrl = `${rendererUrl}/float.html`;
+      console.log('[FloatWindow] 开发模式，加载:', floatUrl);
+      this.window.loadURL(floatUrl);
       // 打开开发者工具
       this.window.webContents.openDevTools({ mode: 'detach' });
     } else {
-      // 生产环境加载打包后的文件
-      this.window.loadFile(path.join(__dirname, '../../renderer/float.html'));
+      // 生产环境：加载打包后的文件
+      const htmlPath = path.join(__dirname, '../renderer/float.html');
+      console.log('[FloatWindow] 生产模式，加载:', htmlPath);
+      this.window.loadFile(htmlPath);
     }
   }
 
@@ -234,6 +292,8 @@ export class FloatWindow {
   public setAlwaysOnTop(flag: boolean): void {
     if (this.window) {
       this.window.setAlwaysOnTop(flag, flag ? 'floating' : 'normal');
+      // 保存置顶状态
+      configStore.setFloatWindowAlwaysOnTop(flag);
     }
   }
 
@@ -243,7 +303,10 @@ export class FloatWindow {
   public setOpacity(opacity: number): void {
     if (this.window) {
       // opacity范围: 0.0 (完全透明) - 1.0 (完全不透明)
-      this.window.setOpacity(Math.max(0, Math.min(1, opacity)));
+      const validOpacity = Math.max(0, Math.min(1, opacity));
+      this.window.setOpacity(validOpacity);
+      // 保存透明度
+      configStore.setFloatWindowOpacity(validOpacity);
     }
   }
 

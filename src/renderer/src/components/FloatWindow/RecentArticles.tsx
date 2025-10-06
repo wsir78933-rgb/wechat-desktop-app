@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { useFloatStore } from '../../store/floatStore'
-import type { Article } from '../../types'
 
 /**
  * 最近文章列表组件

@@ -7,6 +7,7 @@ import { registerArticleHandlers, unregisterArticleHandlers } from './article';
 import { registerTagHandlers, unregisterTagHandlers } from './tag';
 import { registerSearchHandlers, unregisterSearchHandlers } from './search';
 import { registerSystemHandlers, unregisterSystemHandlers } from './system';
+import { registerWindowHandlers, unregisterWindowHandlers } from './window';
 
 /**
  * 注册所有IPC处理器
@@ -21,6 +22,7 @@ export function registerAllIpcHandlers() {
     registerTagHandlers();
     registerSearchHandlers();
     registerSystemHandlers();
+    registerWindowHandlers();
 
     console.log('[IPC] ✅ 所有IPC处理器注册完成');
   } catch (error) {
@@ -41,6 +43,7 @@ export function unregisterAllIpcHandlers() {
     unregisterTagHandlers();
     unregisterSearchHandlers();
     unregisterSystemHandlers();
+    unregisterWindowHandlers();
 
     console.log('[IPC] ✅ 所有IPC处理器清理完成');
   } catch (error) {
@@ -58,4 +61,6 @@ export {
   unregisterSearchHandlers,
   registerSystemHandlers,
   unregisterSystemHandlers,
+  registerWindowHandlers,
+  unregisterWindowHandlers,
 };
