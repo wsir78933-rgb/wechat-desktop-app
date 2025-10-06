@@ -37,8 +37,8 @@ export function registerArticleHandlers() {
         }
       };
 
-      // 适配前端参数格式: { urls: string[], tagIds: number[] }
-      const urls = params.urls || [params.url];
+      // 获取URL列表（ScrapeParams只有单个url）
+      const urls = [params.url];
       const articles: Article[] = [];
 
       sendProgress({
