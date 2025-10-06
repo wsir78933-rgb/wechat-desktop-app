@@ -54,3 +54,7 @@ tmp/
 temp/
 *.tmp
 *.bak
+
+# Build configuration
+build/*.gypi
+build/config.gypi
