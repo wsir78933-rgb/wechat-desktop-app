@@ -60,7 +60,7 @@ jobs:
       - name: 上传安装程序
         uses: actions/upload-artifact@v4
         with:
-          name: 公众号桌面应用-Windows-Setup
+          name: WechatApp-Windows-Setup
           path: |
             dist/*.exe
             dist/*.exe.blockmap
@@ -68,7 +68,7 @@ jobs:
       - name: 上传便携版
         uses: actions/upload-artifact@v4
         with:
-          name: 公众号桌面应用-Windows-Portable
+          name: WechatApp-Windows-Portable
           path: dist/win-unpacked/
 
       # 如果是tag推送，创建GitHub Release
