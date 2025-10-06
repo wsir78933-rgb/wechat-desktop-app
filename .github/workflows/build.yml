@@ -32,8 +32,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
+      - name: 配置 Python（用于原生模块编译）
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: 安装依赖
         run: npm ci
+
+      - name: 重新编译原生模块（确保Windows兼容）
+        if: runner.os == 'Windows'
+        run: npm rebuild better-sqlite3 --build-from-source
 
       - name: TypeScript类型检查
         run: npm run typecheck

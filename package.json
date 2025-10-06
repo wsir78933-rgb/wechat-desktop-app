@@ -46,8 +46,9 @@
     "asarUnpack": [
       "node_modules/better-sqlite3/**/*"
     ],
-    "npmRebuild": false,
-    "buildDependenciesFromSource": false
+    "npmRebuild": true,
+    "buildDependenciesFromSource": true,
+    "nodeGypRebuild": true
   },
   "dependencies": {
     "@types/react-window": "^1.8.8",
