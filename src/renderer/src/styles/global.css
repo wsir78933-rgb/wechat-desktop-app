@@ -1,0 +1,237 @@
+/**
+ * 全局样式
+ * 导入Tailwind CSS和自定义全局样式
+ */
+
+/* Tailwind CSS基础层 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局样式 */
+@layer base {
+  /* 设置HTML和body */
+  html,
+  body {
+    @apply h-full;
+  }
+
+  body {
+    @apply m-0 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+      'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial,
+      sans-serif;
+  }
+
+  /* 设置所有元素的盒模型 */
+  * {
+    @apply box-border;
+  }
+
+  /* 移除默认的focus outline，使用自定义样式 */
+  *:focus {
+    @apply outline-none;
+  }
+
+  /* 为可聚焦元素添加focus ring */
+  *:focus-visible {
+    @apply ring-2 ring-blue-500 ring-offset-2;
+  }
+
+  /* 标题样式 */
+  h1 {
+    @apply text-4xl font-bold;
+  }
+
+  h2 {
+    @apply text-3xl font-bold;
+  }
+
+  h3 {
+    @apply text-2xl font-bold;
+  }
+
+  h4 {
+    @apply text-xl font-bold;
+  }
+
+  h5 {
+    @apply text-lg font-bold;
+  }
+
+  h6 {
+    @apply text-base font-bold;
+  }
+
+  /* 链接样式 */
+  a {
+    @apply text-blue-600 no-underline transition-colors;
+  }
+
+  a:hover {
+    @apply text-blue-700 underline;
+  }
+
+  /* 按钮重置 */
+  button {
+    @apply cursor-pointer;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  /* 输入框样式 */
+  input,
+  textarea,
+  select {
+    @apply bg-white border border-gray-300 rounded-md px-3 py-2 transition-colors;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply border-blue-500 ring-2 ring-blue-500 ring-opacity-20;
+  }
+
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    @apply bg-gray-100 cursor-not-allowed;
+  }
+
+  /* 滚动条样式 */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+}
+
+/* 自定义组件样式 */
+@layer components {
+  /* 卡片样式 */
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6;
+  }
+
+  /* 按钮基础样式 */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  /* 主按钮 */
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+
+  /* 次按钮 */
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500;
+  }
+
+  /* 危险按钮 */
+  .btn-danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+  }
+
+  /* 输入框样式 */
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-colors;
+  }
+
+  /* 标签样式 */
+  .tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  /* 加载动画容器 */
+  .loading-container {
+    @apply flex items-center justify-center p-4;
+  }
+}
+
+/* 实用工具类 */
+@layer utilities {
+  /* 文本省略 */
+  .text-ellipsis {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  /* 多行文本省略 */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 隐藏滚动条 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glassmorphism效果 */
+  .glass {
+    @apply bg-white bg-opacity-70 backdrop-blur-lg border border-white border-opacity-20;
+  }
+
+  /* 渐变背景 */
+  .gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .gradient-success {
+    background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+  }
+
+  .gradient-warning {
+    background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  }
+
+  .gradient-danger {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+}
+
+/* 打印样式 */
+@media print {
+  @page {
+    margin: 2cm;
+  }
+
+  body {
+    @apply bg-white text-black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* 深色模式支持（可选） */
+@media (prefers-color-scheme: dark) {
+  /* 可以在这里添加深色模式样式 */
+}

@@ -1,0 +1,209 @@
+悬浮窗组件文件结构
+==================
+
+公众号桌面应用/
+├── src/
+│   └── renderer/
+│       ├── float.html                      # 悬浮窗HTML入口
+│       └── src/
+│           ├── float.tsx                   # 悬浮窗React入口 ⭐ NEW
+│           ├── FloatApp.tsx                # 悬浮窗主应用组件 ⭐ NEW
+│           ├── index.css                   # 全局样式（已扩展CSS动画）
+│           │
+│           ├── components/
+│           │   └── FloatWindow/            # 悬浮窗组件目录 ⭐ NEW
+│           │       ├── FloatLayout.tsx     # 布局容器（400x600）
+│           │       ├── UrlInput.tsx        # URL输入验证
+│           │       ├── QuickTags.tsx       # 快速标签选择器
+│           │       ├── RecentArticles.tsx  # 最近5篇文章
+│           │       ├── DropZone.tsx        # 拖放区域
+│           │       ├── index.ts            # 统一导出
+│           │       └── README.md           # 组件文档
+│           │
+│           ├── store/
+│           │   └── floatStore.ts           # Zustand状态管理 ⭐ NEW
+│           │
+│           └── types/
+│               └── index.ts                # 类型定义（已扩展）
+│
+├── dosc/
+│   └── UI界面设计_中文版.txt              # UI设计参考文档
+│
+├── FLOAT_WINDOW_DEVELOPMENT.md             # 开发完成报告 ⭐ NEW
+└── FLOAT_WINDOW_STRUCTURE.txt              # 本文件 ⭐ NEW
+
+
+组件依赖关系图
+==============
+
+FloatApp (主入口)
+    │
+    └─── FloatLayout (布局容器)
+            │
+            ├─── DropZone (拖放区域)
+            │       └─── useFloatStore (状态)
+            │
+            ├─── UrlInput (URL输入)
+            │       └─── useFloatStore (状态)
+            │
+            ├─── QuickTags (标签选择)
+            │       └─── useFloatStore (状态)
+            │
+            └─── RecentArticles (文章列表)
+                    └─── useFloatStore (状态)
+
+
+状态管理流程
+============
+
+floatStore (Zustand)
+    ├─── position: WindowPosition
+    ├─── isAlwaysOnTop: boolean
+    ├─── inputUrl: string
+    ├─── collectStatus: CollectStatus
+    ├─── collectError: string | null
+    ├─── recentArticles: Article[]
+    └─── frequentTags: string[]
+
+持久化 (localStorage)
+    ├─── position          ✅ 保存
+    ├─── isAlwaysOnTop     ✅ 保存
+    ├─── frequentTags      ✅ 保存
+    └─── 其他状态          ❌ 不保存（临时数据）
+
+
+IPC通信架构
+===========
+
+Renderer Process (React)          Main Process (Electron)
+    │                                     │
+    ├─ window.api.collectArticle()  ────>│
+    │                                     │
+    ├─ window.api.getRecentArticles()────>│
+    │                                     │
+    ├─ window.api.openMainWindow()  ────>│
+    │                                     │
+    ├─ window.api.minimize()        ────>│
+    │                                     │
+    ├─ window.api.close()           ────>│
+    │                                     │
+    └─ window.api.toggleAlwaysOnTop()────>│
+                                          │
+    ┌─────────────────────────────────────┘
+    │
+    └─ window.api.onAlwaysOnTopChanged((isOnTop) => {})
+
+
+技术栈
+======
+
+前端框架:
+    ⚛️  React 18
+    📘 TypeScript 5.x
+    🎨 Tailwind CSS 3.x
+
+状态管理:
+    🐻 Zustand (with persist middleware)
+
+构建工具:
+    ⚡ Vite 5.x
+
+桌面框架:
+    🖥️  Electron
+
+
+文件统计
+========
+
+类型              数量    文件名
+─────────────────────────────────────────
+React组件         6       FloatLayout, UrlInput, QuickTags, 
+                          RecentArticles, DropZone, FloatApp
+状态管理          1       floatStore.ts
+入口文件          2       float.html, float.tsx
+类型定义          1       types/index.ts (扩展)
+样式文件          1       index.css (扩展)
+组件导出          1       components/FloatWindow/index.ts
+文档              3       README.md (组件文档)
+                          FLOAT_WINDOW_DEVELOPMENT.md
+                          FLOAT_WINDOW_STRUCTURE.txt
+─────────────────────────────────────────
+总计              15
+
+
+关键特性
+========
+
+✅ 无边框毛玻璃效果窗口
+✅ 自定义可拖动标题栏
+✅ 窗口控制（置顶/最小化/关闭）
+✅ URL验证（微信公众号专用）
+✅ 拖放链接支持
+✅ 快速标签选择（多选+新建）
+✅ 最近文章列表（最多5篇）
+✅ 状态持久化（localStorage）
+✅ 完整的错误处理
+✅ 丰富的交互动画
+✅ 响应式UI反馈
+✅ 全中文界面
+
+
+CSS动画清单
+===========
+
+自定义动画:
+    fade-in        淡入动画（0.3s）
+    shimmer        闪光动画（2s循环）
+    
+Tailwind工具类:
+    animate-spin   旋转加载
+    animate-bounce 弹跳效果
+    animate-pulse  骨架屏脉动
+    
+自定义滚动条:
+    scrollbar-thin 6px宽度滚动条
+
+
+待实现功能（下一阶段）
+======================
+
+主进程开发:
+    □ 创建悬浮窗BrowserWindow
+    □ 实现IPC handlers
+    □ 全局快捷键注册
+    □ 窗口位置保存/恢复
+    
+功能增强:
+    □ 文章预览
+    □ 批量导入链接
+    □ 历史记录搜索
+    □ 自定义快捷键
+    □ 主题切换（亮/暗）
+    
+性能优化:
+    □ 虚拟滚动
+    □ 图片懒加载
+    □ 防抖/节流
+
+
+开发规范
+========
+
+TypeScript:
+    ✓ 严格模式
+    ✓ 明确的Props接口
+    ✓ 避免any类型
+    ✓ 完整类型推断
+
+React:
+    ✓ 函数式组件
+    ✓ Hooks优先
+    ✓ useCallback优化
+    ✓ 组件单一职责
+
+代码组织:
+    ✓ 按功能模块分组
+    ✓ 统一导出（index.ts）
+    ✓ 完善的JSDoc注释
+    ✓ 清晰的文件命名
+
