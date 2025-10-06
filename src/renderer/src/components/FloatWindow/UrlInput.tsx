@@ -64,19 +64,26 @@ const UrlInput: React.FC = () => {
       setCollectError(null)
 
       // 调用API采集文章
-      if (window.api?.collectArticle) {
-        const article = await window.api.collectArticle(inputUrl)
+      if (window.api?.scrapeArticles) {
+        const result = await window.api.scrapeArticles({
+          urls: [inputUrl],
+          tagIds: []
+        })
 
-        // 添加到最近文章列表
-        addRecentArticle(article)
+        if (result.success && result.articles && result.articles.length > 0) {
+          // 添加到最近文章列表
+          addRecentArticle(result.articles[0])
 
-        setCollectStatus('success')
-        setInputUrl('') // 清空输入框
+          setCollectStatus('success')
+          setInputUrl('') // 清空输入框
 
-        // 3秒后重置状态
-        setTimeout(() => {
-          setCollectStatus('idle')
-        }, 3000)
+          // 3秒后重置状态
+          setTimeout(() => {
+            setCollectStatus('idle')
+          }, 3000)
+        } else {
+          throw new Error(result.error || '采集失败')
+        }
       } else {
         throw new Error('API未初始化')
       }

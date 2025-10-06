@@ -58,3 +58,6 @@ temp/
 # Build configuration
 build/*.gypi
 build/config.gypi
+
+# App configuration
+wechat-desktop-config.json

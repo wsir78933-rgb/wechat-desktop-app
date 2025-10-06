@@ -28,20 +28,20 @@ const FloatLayout: React.FC<FloatLayoutProps> = ({ children }) => {
   }, [setAlwaysOnTop])
 
   const handleMinimize = () => {
-    if (window.api?.minimize) {
-      window.api.minimize()
+    if (window.api?.window?.minimize) {
+      window.api.window.minimize('float')
     }
   }
 
   const handleClose = () => {
-    if (window.api?.close) {
-      window.api.close()
+    if (window.api?.window?.close) {
+      window.api.window.close('float')
     }
   }
 
   const handleTogglePin = () => {
-    if (window.api?.toggleAlwaysOnTop) {
-      window.api.toggleAlwaysOnTop()
+    if (window.api?.window?.toggleAlwaysOnTop) {
+      window.api.window.toggleAlwaysOnTop('float')
     }
   }
 
