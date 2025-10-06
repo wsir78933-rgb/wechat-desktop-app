@@ -25,10 +25,12 @@ dist-electron
 
 # Build output
 out
-build
 .output
 .vercel
 .netlify
+
+# Electron builder output
+dist/
 
 # Environment
 .env
