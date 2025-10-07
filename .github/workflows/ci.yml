@@ -143,6 +143,9 @@ jobs:
       run: |
         python -c "
         import os
+        import sys
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
         required_dirs = ['src/main/python', 'data', 'logs', 'docs']
         for d in required_dirs:
             os.makedirs(d, exist_ok=True)
@@ -157,6 +160,8 @@ jobs:
         python -c "
         import sys
         import os
+        import io
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
         sys.path.insert(0, 'src/main/python')
         from core.database import Database
         db = Database('data/test.db')
