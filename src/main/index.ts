@@ -24,7 +24,7 @@ function createWindow() {
     height: 800,
     minWidth: 960,
     minHeight: 600,
-    show: false, // 窗口准备好后再显示
+    show: true, // WSL环境中立即显示窗口
     autoHideMenuBar: true, // 隐藏菜单栏
     backgroundColor: '#ffffff',
     webPreferences: {

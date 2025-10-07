@@ -23,6 +23,8 @@ fi
 export DISPLAY=:0
 export ELECTRON_DISABLE_SANDBOX=1
 export ELECTRON_NO_ATTACH_CONSOLE=1
+export ELECTRON_DISABLE_GPU=1
+export LIBGL_ALWAYS_SOFTWARE=1
 
 # 清理可能存在的Electron进程
 echo "🧹 清理旧的Electron进程..."
@@ -44,5 +46,5 @@ echo ""
 echo "-----------------------------------"
 echo ""
 
-# 启动npm dev
-npm run dev
+# 启动npm dev with additional Electron flags
+ELECTRON_ENABLE_LOGGING=1 npm run dev -- --no-sandbox --disable-gpu-sandbox
