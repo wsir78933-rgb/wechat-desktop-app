@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QSplitter, QPushButton, QAction, QMenuBar, QToolBar,
     QStatusBar, QMessageBox, QFileDialog
 )
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
 from PyQt5.QtGui import QIcon, QFont
 
 
@@ -152,15 +152,18 @@ class MainWindow(QMainWindow):
         """创建工具栏"""
         toolbar = QToolBar("主工具栏")
         toolbar.setMovable(False)
+        toolbar.setIconSize(QSize(32, 32))
         self.addToolBar(toolbar)
 
         # 添加账号按钮
         add_account_btn = QPushButton("➕ 添加账号")
+        add_account_btn.setFixedHeight(32)
         add_account_btn.clicked.connect(self.add_account)
         toolbar.addWidget(add_account_btn)
 
         # 添加文章按钮
         add_article_btn = QPushButton("➕ 添加文章")
+        add_article_btn.setFixedHeight(32)
         add_article_btn.clicked.connect(self.add_article)
         toolbar.addWidget(add_article_btn)
 
@@ -168,11 +171,13 @@ class MainWindow(QMainWindow):
 
         # 刷新按钮
         refresh_btn = QPushButton("🔄 刷新")
+        refresh_btn.setFixedHeight(32)
         refresh_btn.clicked.connect(self.refresh_data)
         toolbar.addWidget(refresh_btn)
 
         # 导出按钮
         export_btn = QPushButton("📤 导出")
+        export_btn.setFixedHeight(32)
         export_btn.clicked.connect(self.export_data)
         toolbar.addWidget(export_btn)
 
@@ -180,6 +185,7 @@ class MainWindow(QMainWindow):
 
         # 设置按钮
         settings_btn = QPushButton("⚙️ 设置")
+        settings_btn.setFixedHeight(32)
         settings_btn.clicked.connect(self.show_settings)
         toolbar.addWidget(settings_btn)
 

@@ -71,7 +71,9 @@ class AccountListWidget(QWidget):
         # 操作按钮
         btn_layout = QHBoxLayout()
         self.edit_btn = QPushButton("📝 编辑")
+        self.edit_btn.setFixedHeight(32)
         self.delete_btn = QPushButton("🗑️ 删除")
+        self.delete_btn.setFixedHeight(32)
 
         self.edit_btn.clicked.connect(self.on_edit_clicked)
         self.delete_btn.clicked.connect(self.on_delete_clicked)

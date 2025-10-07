@@ -85,14 +85,17 @@ class ArticleListWidget(QWidget):
 
         self.select_all_btn = QPushButton("全选")
         self.select_all_btn.clicked.connect(self.select_all)
+        self.select_all_btn.setFixedHeight(32)
 
         self.batch_delete_btn = QPushButton("🗑️ 批量删除")
         self.batch_delete_btn.clicked.connect(self.batch_delete)
         self.batch_delete_btn.setEnabled(False)
+        self.batch_delete_btn.setFixedHeight(32)
 
         self.export_btn = QPushButton("📤 导出选中")
         self.export_btn.clicked.connect(self.export_selected)
         self.export_btn.setEnabled(False)
+        self.export_btn.setFixedHeight(32)
 
         btn_layout.addWidget(self.select_all_btn)
         btn_layout.addWidget(self.batch_delete_btn)
