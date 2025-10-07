@@ -3,7 +3,7 @@
 负责文章的增删改查、批量操作、搜索等业务逻辑
 """
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from datetime import datetime
 
 from .database import Database, transaction
@@ -93,7 +93,7 @@ class ArticleManager:
             logger.error(f"添加文章失败: {e}")
             return None
 
-    def batch_add_articles(self, articles: List[Dict[str, Any]]) -> tuple[bool, int, int]:
+    def batch_add_articles(self, articles: List[Dict[str, Any]]) -> Tuple[bool, int, int]:
         """
         批量添加文章（使用事务）
 
@@ -267,7 +267,7 @@ class ArticleManager:
             logger.error(f"删除文章失败: {e}")
             return False
 
-    def batch_delete_articles(self, article_ids: List[int]) -> tuple[bool, int]:
+    def batch_delete_articles(self, article_ids: List[int]) -> Tuple[bool, int]:
         """
         批量删除文章
 
