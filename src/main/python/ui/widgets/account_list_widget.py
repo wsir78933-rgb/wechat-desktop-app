@@ -259,12 +259,17 @@ class AccountListWidget(QWidget):
             return
 
         # 确认删除
+        account_name = account['name']
+        article_count = account.get('article_count', 0)
+        message = (
+            f"确定要删除账号 {account_name} 及其所有文章吗？\n\n"
+            f"该账号共有 {article_count} 篇文章\n"
+            f"此操作无法恢复！"
+        )
         reply = QMessageBox.question(
             self,
             '确认删除',
-            f"确定要删除账号"{account['name']}"及其所有文章吗？\n\n"
-            f"该账号共有 {account.get('article_count', 0)} 篇文章\n"
-            f"此操作无法恢复！",
+            message,
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No
         )

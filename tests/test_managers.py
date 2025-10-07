@@ -6,6 +6,12 @@ import sys
 import os
 from pathlib import Path
 
+# Windows控制台UTF-8支持
+if sys.platform == 'win32':
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 # 添加项目路径到sys.path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src" / "main" / "python"))
@@ -27,10 +33,10 @@ def test_database():
     print("\n========== 测试数据库连接 ==========")
     try:
         db = Database("test_database.db")
-        print("✓ 数据库连接成功")
+        print("[OK] 数据库连接成功")
         return db
     except Exception as e:
-        print(f"✗ 数据库连接失败: {e}")
+        print(f"[FAIL] 数据库连接失败: {e}")
         return None
 
 
@@ -50,20 +56,20 @@ def test_account_manager(db):
     )
 
     if account_id:
-        print(f"✓ 添加账号成功，ID: {account_id}")
+        print(f"[OK] 添加账号成功，ID: {account_id}")
     else:
-        print("✗ 添加账号失败")
+        print("[FAIL] 添加账号失败")
         return None
 
     # 2. 获取账号
     print("\n2. 测试获取账号...")
     account = account_manager.get_account(account_id)
     if account:
-        print(f"✓ 获取账号成功: {account['name']}")
+        print(f"[OK] 获取账号成功: {account['name']}")
         print(f"  分类: {account['category']}")
         print(f"  描述: {account['description']}")
     else:
-        print("✗ 获取账号失败")
+        print("[FAIL] 获取账号失败")
 
     # 3. 更新账号
     print("\n3. 测试更新账号...")
@@ -71,17 +77,17 @@ def test_account_manager(db):
         account_id,
         description="更新后的描述"
     )
-    print(f"{'✓' if success else '✗'} 更新账号{'成功' if success else '失败'}")
+    print(f"[{'OK' if success else 'FAIL'}] 更新账号{'成功' if success else '失败'}")
 
     # 4. 获取所有账号
     print("\n4. 测试获取所有账号...")
     accounts = account_manager.get_all_accounts()
-    print(f"✓ 获取所有账号成功，共 {len(accounts)} 个账号")
+    print(f"[OK] 获取所有账号成功，共 {len(accounts)} 个账号")
 
     # 5. 搜索账号
     print("\n5. 测试搜索账号...")
     results = account_manager.search_accounts("测试")
-    print(f"✓ 搜索成功，找到 {len(results)} 个结果")
+    print(f"[OK] 搜索成功，找到 {len(results)} 个结果")
 
     return account_id
 
@@ -105,9 +111,9 @@ def test_article_manager(db, account_id):
     )
 
     if article_id:
-        print(f"✓ 添加文章成功，ID: {article_id}")
+        print(f"[OK] 添加文章成功，ID: {article_id}")
     else:
-        print("✗ 添加文章失败")
+        print("[FAIL] 添加文章失败")
         return None
 
     # 2. 批量添加文章
@@ -130,23 +136,23 @@ def test_article_manager(db, account_id):
     ]
 
     success, success_count, fail_count = article_manager.batch_add_articles(articles_data)
-    print(f"{'✓' if success else '✗'} 批量添加文章{'成功' if success else '失败'}")
+    print(f"[{'OK' if success else 'FAIL'}] 批量添加文章{'成功' if success else '失败'}")
     print(f"  成功: {success_count} 篇，失败: {fail_count} 篇")
 
     # 3. 获取文章
     print("\n3. 测试获取文章...")
     article = article_manager.get_article(article_id)
     if article:
-        print(f"✓ 获取文章成功: {article['title']}")
+        print(f"[OK] 获取文章成功: {article['title']}")
         print(f"  账号: {article['account_name']}")
         print(f"  发布日期: {article['publish_date']}")
     else:
-        print("✗ 获取文章失败")
+        print("[FAIL] 获取文章失败")
 
     # 4. 获取账号下的文章
     print("\n4. 测试获取账号下的文章...")
     articles = article_manager.get_articles_by_account(account_id)
-    print(f"✓ 获取账号文章成功，共 {len(articles)} 篇")
+    print(f"[OK] 获取账号文章成功，共 {len(articles)} 篇")
     for idx, art in enumerate(articles, 1):
         print(f"  {idx}. {art['title']}")
 
@@ -156,17 +162,17 @@ def test_article_manager(db, account_id):
         article_id,
         summary="更新后的摘要内容"
     )
-    print(f"{'✓' if success else '✗'} 更新文章{'成功' if success else '失败'}")
+    print(f"[{'OK' if success else 'FAIL'}] 更新文章{'成功' if success else '失败'}")
 
     # 6. 搜索文章
     print("\n6. 测试搜索文章...")
     results = article_manager.search_articles("测试", account_id=account_id)
-    print(f"✓ 搜索成功，找到 {len(results)} 篇文章")
+    print(f"[OK] 搜索成功，找到 {len(results)} 篇文章")
 
     # 7. 获取文章总数
     print("\n7. 测试获取文章总数...")
     count = article_manager.get_article_count(account_id)
-    print(f"✓ 文章总数: {count}")
+    print(f"[OK] 文章总数: {count}")
 
     return articles
 
@@ -190,7 +196,7 @@ def test_export_manager(db, account_id):
     print("\n1. 测试Excel导出...")
     excel_path = output_dir / "test_export.xlsx"
     success = ExportManager.export_to_excel(accounts, articles, str(excel_path))
-    print(f"{'✓' if success else '✗'} Excel导出{'成功' if success else '失败'}")
+    print(f"[{'OK' if success else 'FAIL'}] Excel导出{'成功' if success else '失败'}")
     if success:
         print(f"  文件路径: {excel_path.absolute()}")
 
@@ -198,7 +204,7 @@ def test_export_manager(db, account_id):
     print("\n2. 测试JSON导出...")
     json_path = output_dir / "test_export.json"
     success = ExportManager.export_to_json(accounts, articles, str(json_path))
-    print(f"{'✓' if success else '✗'} JSON导出{'成功' if success else '失败'}")
+    print(f"[{'OK' if success else 'FAIL'}] JSON导出{'成功' if success else '失败'}")
     if success:
         print(f"  文件路径: {json_path.absolute()}")
 
@@ -206,20 +212,28 @@ def test_export_manager(db, account_id):
     print("\n3. 测试Markdown导出...")
     md_path = output_dir / "test_export.md"
     success = ExportManager.export_to_markdown(accounts, articles, str(md_path))
-    print(f"{'✓' if success else '✗'} Markdown导出{'成功' if success else '失败'}")
+    print(f"[{'OK' if success else 'FAIL'}] Markdown导出{'成功' if success else '失败'}")
     if success:
         print(f"  文件路径: {md_path.absolute()}")
 
 
-def cleanup():
+def cleanup(db=None):
     """清理测试数据"""
     print("\n========== 清理测试数据 ==========")
     try:
+        # 关闭数据库连接
+        if db:
+            db.close()
+            print("[OK] 数据库连接已关闭")
+
+        # 删除测试数据库文件
         if os.path.exists("test_database.db"):
+            import time
+            time.sleep(0.5)  # 等待文件释放
             os.remove("test_database.db")
-            print("✓ 测试数据库已删除")
+            print("[OK] 测试数据库已删除")
     except Exception as e:
-        print(f"✗ 清理失败: {e}")
+        print(f"[FAIL] 清理失败: {e}")
 
 
 def main():
@@ -228,6 +242,7 @@ def main():
     print("Manager类功能测试")
     print("=" * 50)
 
+    db = None
     try:
         # 测试数据库
         db = test_database()
@@ -246,17 +261,17 @@ def main():
         test_export_manager(db, account_id)
 
         print("\n" + "=" * 50)
-        print("✓ 所有测试完成")
+        print("[OK] 所有测试完成")
         print("=" * 50)
 
     except Exception as e:
-        print(f"\n✗ 测试出错: {e}")
+        print(f"\n[FAIL] 测试出错: {e}")
         import traceback
         traceback.print_exc()
 
     finally:
         # 清理测试数据
-        cleanup()
+        cleanup(db)
 
 
 if __name__ == "__main__":

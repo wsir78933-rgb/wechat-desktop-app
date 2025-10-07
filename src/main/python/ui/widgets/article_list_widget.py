@@ -360,10 +360,12 @@ class ArticleListWidget(QWidget):
             return
 
         # 确认删除
+        article_title = article['title']
+        message = f"确定要删除文章 {article_title} 吗？\n\n此操作无法恢复！"
         reply = QMessageBox.question(
             self,
             '确认删除',
-            f"确定要删除文章"{article['title']}"吗？\n\n此操作无法恢复！",
+            message,
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No
         )

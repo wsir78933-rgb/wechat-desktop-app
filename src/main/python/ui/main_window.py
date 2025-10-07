@@ -317,7 +317,9 @@ class MainWindow(QMainWindow):
         if self.article_list_widget:
             # 获取文章数量
             total_articles = self.article_list_widget.list_widget.count()
-            selected_account = self.article_list_widget.current_account_name or ""
+            # 获取选中账号名称（如果存在）
+            if hasattr(self.article_list_widget, 'current_account_name'):
+                selected_account = self.article_list_widget.current_account_name or ""
 
         status_text = f"共 {total_accounts} 个账号 | {total_articles} 篇文章"
         if selected_account:
