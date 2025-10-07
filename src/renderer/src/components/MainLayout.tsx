@@ -33,14 +33,25 @@ export const MainLayout: React.FC = () => {
 
   const handleSaveArticle = async (article: Partial<Article>) => {
     try {
-      await window.api.createArticle(article)
+      console.log('[MainLayout] 准备保存文章:', article);
+      console.log('[MainLayout] window.api:', window.api);
+      console.log('[MainLayout] window.api.createArticle:', window.api?.createArticle);
+
+      if (!window.api || !window.api.createArticle) {
+        throw new Error('window.api.createArticle 未定义，请检查 Preload 脚本是否正确加载');
+      }
+
+      const result = await window.api.createArticle(article);
+      console.log('[MainLayout] 文章保存成功:', result);
+
       // 刷新文章列表
-      await fetchArticles()
+      await fetchArticles();
+
       // 关闭对话框
-      setShowAddModal(false)
+      setShowAddModal(false);
     } catch (error) {
-      console.error('保存文章失败:', error)
-      throw error
+      console.error('[MainLayout] 保存文章失败:', error);
+      throw error;
     }
   }
 
