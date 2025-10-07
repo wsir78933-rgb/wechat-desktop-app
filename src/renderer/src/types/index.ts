@@ -28,6 +28,7 @@ export type CollectStatus = 'idle' | 'loading' | 'success' | 'error';
 /**
  * 窗口API类型定义（用于悬浮窗）
  * 注意：此类型与主窗口的IpcApi类型冲突，已在src/types/ipc.ts中统一定义为联合类型
+ * 实际使用的是 IpcApi 接口，这里保留用于类型兼容
  */
 export interface WindowAPI {
   minimize: () => void;
@@ -39,4 +40,22 @@ export interface WindowAPI {
   openMainWindow: (articleId?: string) => void;
   getWindowPosition: () => Promise<WindowPosition>;
   setWindowPosition: (position: WindowPosition) => void;
+
+  // 添加缺失的属性以匹配 IpcApi
+  window: {
+    minimize: (windowType?: 'main' | 'float') => Promise<void>;
+    close: (windowType?: 'main' | 'float') => Promise<void>;
+    toggleAlwaysOnTop: (windowType?: 'main' | 'float') => Promise<boolean>;
+    getPosition: (windowType?: 'main' | 'float') => Promise<WindowPosition>;
+    setPosition: (windowType: 'main' | 'float', x: number, y: number) => Promise<void>;
+    getSize: (windowType?: 'main' | 'float') => Promise<{ width: number; height: number }>;
+    setSize: (windowType: 'main' | 'float', width: number, height: number) => Promise<void>;
+    openMain: (articleId?: number) => Promise<void>;
+    showFloat: () => Promise<void>;
+    hideFloat: () => Promise<void>;
+    toggleFloat: () => Promise<void>;
+  };
+
+  // 添加 scrapeArticles 方法
+  scrapeArticles: (params: import('./article').ScrapeParams) => Promise<import('./article').ScrapeResult>;
 }

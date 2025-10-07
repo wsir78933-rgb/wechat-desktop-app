@@ -66,8 +66,9 @@ const UrlInput: React.FC = () => {
       // 调用API采集文章
       if (window.api?.scrapeArticles) {
         const result = await window.api.scrapeArticles({
-          urls: [inputUrl],
-          tagIds: []
+          url: inputUrl,
+          accountName: '未知公众号', // 可以后续优化为从URL中提取
+          maxArticles: 1
         })
 
         if (result.success && result.articles && result.articles.length > 0) {
