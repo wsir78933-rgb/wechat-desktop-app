@@ -5,6 +5,13 @@ import './index.css';
 import './styles/global.css';
 import './styles/animations.css';
 
+// 开发环境下加载测试函数
+if (process.env.NODE_ENV === 'development') {
+  import('./test-functions').then(() => {
+    console.log('✅ 测试函数加载完成');
+  });
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

@@ -4,6 +4,7 @@
  */
 
 import Store from 'electron-store';
+import { getUserDataPath, ensureDirectory, normalizePath } from '../utils/platform';
 
 /**
  * 窗口位置类型
@@ -80,15 +81,19 @@ class ConfigStore {
   private store: Store<AppConfig>;
 
   constructor() {
+    // 确保配置目录存在
+    const configPath = getUserDataPath();
+    ensureDirectory(configPath);
+
     this.store = new Store<AppConfig>({
       name: 'wechat-desktop-config',
       defaults: defaultConfig,
-      // 开发环境下使用当前目录，避免影响生产环境配置
-      cwd: process.env.NODE_ENV === 'development' ? process.cwd() : undefined,
+      // 使用跨平台的路径
+      cwd: configPath,
     });
 
     console.log('[ConfigStore] 配置存储已初始化');
-    console.log('[ConfigStore] 配置文件路径:', this.store.path);
+    console.log('[ConfigStore] 配置文件路径:', normalizePath(this.store.path));
   }
 
   // ============= 悬浮窗相关 =============

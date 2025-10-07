@@ -8,6 +8,7 @@ import { join } from 'path';
 import { registerAllIpcHandlers, unregisterAllIpcHandlers } from './ipc';
 import { floatWindow } from './windows/floatWindow';
 import { windowManager } from './ipc/window';
+import { initializeDirectories, getPlatformInfo, normalizePath } from './utils/platform';
 
 // 主窗口实例
 let mainWindow: BrowserWindow | null = null;
@@ -146,6 +147,13 @@ app.whenReady().then(() => {
   console.log('[Main] Electron版本:', process.versions.electron);
   console.log('[Main] Node版本:', process.versions.node);
   console.log('[Main] Chrome版本:', process.versions.chrome);
+
+  // 显示平台信息
+  const platformInfo = getPlatformInfo();
+  console.log('[Main] 平台信息:', platformInfo);
+
+  // 初始化必要的目录（跨平台）
+  initializeDirectories();
 
   // 注册所有IPC处理器
   registerAllIpcHandlers();
