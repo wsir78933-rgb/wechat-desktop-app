@@ -3,7 +3,9 @@
  * 功能：抓取微信公众号文章内容
  */
 
-import { net } from 'electron';
+import * as https from 'https';
+import * as http from 'http';
+import * as zlib from 'zlib';
 import * as cheerio from 'cheerio';
 
 /**
@@ -175,38 +177,90 @@ export class WechatScraper {
       // 确保请求间隔
       await this.ensureRequestInterval();
 
-      // 使用 Electron net 模块发送请求
-      const request = net.request({
-        method: 'GET',
-        url: url,
-        redirect: 'follow'
-      });
+      // 解析URL
+      const urlObj = new URL(url);
+      const isHttps = urlObj.protocol === 'https:';
+      const httpModule = isHttps ? https : http;
 
-      // 设置请求头
-      request.setHeader('User-Agent', getRandomUserAgent());
-      request.setHeader('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8');
-      request.setHeader('Accept-Language', 'zh-CN,zh;q=0.9,en;q=0.8');
-      request.setHeader('Connection', 'keep-alive');
+      // 配置请求选项
+      const options = {
+        hostname: urlObj.hostname,
+        path: urlObj.pathname + urlObj.search,
+        method: 'GET',
+        headers: {
+          'User-Agent': getRandomUserAgent(),
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive',
+          'Cache-Control': 'no-cache',
+          'Upgrade-Insecure-Requests': '1',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1'
+        },
+        timeout: this.config.timeout
+      };
 
       // 返回 Promise
       return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
+        const request = httpModule.get(options, (response) => {
+          const statusCode = response.statusCode || 0;
 
-        request.on('response', (response) => {
-          const statusCode = response.statusCode;
-
-          if (statusCode < 200 || statusCode >= 400) {
-            reject(new Error(`HTTP ${statusCode}`));
+          // 处理重定向
+          if (statusCode >= 300 && statusCode < 400 && response.headers.location) {
+            const redirectUrl = new URL(response.headers.location, url).toString();
+            console.log(`重定向到: ${redirectUrl}`);
+            this.fetchWithRetry(redirectUrl, retryCount)
+              .then(resolve)
+              .catch(reject);
             return;
           }
 
+          if (statusCode < 200 || statusCode >= 400) {
+            reject(new Error(`HTTP ${statusCode}: ${response.statusMessage}`));
+            return;
+          }
+
+          const chunks: Buffer[] = [];
+
           response.on('data', (chunk) => {
-            chunks.push(Buffer.from(chunk));
+            chunks.push(chunk);
           });
 
           response.on('end', () => {
-            const html = Buffer.concat(chunks).toString('utf-8');
-            resolve(html);
+            const buffer = Buffer.concat(chunks);
+
+            // 处理压缩
+            const encoding = response.headers['content-encoding'];
+            if (encoding === 'gzip') {
+              zlib.gunzip(buffer, (err, decoded) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(decoded.toString('utf-8'));
+                }
+              });
+            } else if (encoding === 'deflate') {
+              zlib.inflate(buffer, (err, decoded) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(decoded.toString('utf-8'));
+                }
+              });
+            } else if (encoding === 'br') {
+              zlib.brotliDecompress(buffer, (err, decoded) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(decoded.toString('utf-8'));
+                }
+              });
+            } else {
+              resolve(buffer.toString('utf-8'));
+            }
           });
 
           response.on('error', (error: Error) => {
@@ -218,11 +272,10 @@ export class WechatScraper {
           reject(error);
         });
 
-        // 设置超时
-        setTimeout(() => {
-          request.abort();
+        request.on('timeout', () => {
+          request.destroy();
           reject(new Error('请求超时'));
-        }, this.config.timeout);
+        });
 
         request.end();
       });
