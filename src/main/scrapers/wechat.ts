@@ -209,12 +209,12 @@ export class WechatScraper {
             resolve(html);
           });
 
-          response.on('error', (error) => {
+          response.on('error', (error: Error) => {
             reject(error);
           });
         });
 
-        request.on('error', (error) => {
+        request.on('error', (error: Error) => {
           reject(error);
         });
 
