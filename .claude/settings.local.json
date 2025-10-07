@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Read(//home/wcp/.ssh/**)",
+      "Bash(ssh:*)",
+      "Bash(sudo lsof:*)",
+      "Bash(lsof:*)",
+      "Bash(netstat:*)",
+      "Bash(ping:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

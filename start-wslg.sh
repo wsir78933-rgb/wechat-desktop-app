@@ -46,5 +46,5 @@ echo ""
 echo "-----------------------------------"
 echo ""
 
-# 启动npm dev with additional Electron flags
-ELECTRON_ENABLE_LOGGING=1 npm run dev -- --no-sandbox --disable-gpu-sandbox
+# 启动npm dev（Electron参数通过环境变量传递）
+ELECTRON_ENABLE_LOGGING=1 npm run dev
