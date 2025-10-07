@@ -114,6 +114,39 @@ export function registerArticleHandlers() {
     }
   });
 
+  // ============= 手动创建文章 =============
+  ipcMain.handle(
+    IPC_CHANNELS.ARTICLE_CREATE,
+    async (_event, article: Partial<Article>): Promise<Article> => {
+      console.log('[IPC] 手动创建文章:', article);
+
+      try {
+        // 生成文章ID
+        const newArticle: Article = {
+          id: Date.now(),
+          title: article.title || '无标题',
+          author: article.author || '未知作者',
+          publishDate: article.publishDate || new Date().toISOString(),
+          content: article.content || '',
+          url: article.url || `manual-${Date.now()}`,
+          tags: article.tags || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        // TODO: 保存到数据库
+        // const db = new ArticleDatabase();
+        // await db.insert(newArticle);
+
+        console.log('[IPC] ✅ 文章创建成功:', newArticle.title);
+        return newArticle;
+      } catch (error) {
+        console.error('[IPC] 文章创建失败:', error);
+        throw error;
+      }
+    }
+  );
+
   // ============= 获取所有文章 =============
   ipcMain.handle(
     IPC_CHANNELS.ARTICLE_GET_ALL,
@@ -242,6 +275,7 @@ export function registerArticleHandlers() {
  */
 export function unregisterArticleHandlers() {
   ipcMain.removeHandler(IPC_CHANNELS.ARTICLE_SCRAPE);
+  ipcMain.removeHandler(IPC_CHANNELS.ARTICLE_CREATE);
   ipcMain.removeHandler(IPC_CHANNELS.ARTICLE_GET_ALL);
   ipcMain.removeHandler(IPC_CHANNELS.ARTICLE_GET_BY_ID);
   ipcMain.removeHandler(IPC_CHANNELS.ARTICLE_DELETE);

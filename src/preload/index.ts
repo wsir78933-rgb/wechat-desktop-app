@@ -53,6 +53,11 @@ const api: IpcApi = {
     return safeInvoke(IPC_CHANNELS.ARTICLE_SCRAPE, params);
   },
 
+  createArticle: (article) => {
+    console.log('[Preload] 调用: createArticle', article);
+    return safeInvoke(IPC_CHANNELS.ARTICLE_CREATE, article);
+  },
+
   getAllArticles: (limit = 50, offset = 0) => {
     console.log('[Preload] 调用: getAllArticles', { limit, offset });
     return safeInvoke(IPC_CHANNELS.ARTICLE_GET_ALL, limit, offset);

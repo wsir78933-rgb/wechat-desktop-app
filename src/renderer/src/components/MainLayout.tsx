@@ -7,20 +7,41 @@ import { SearchBar } from './SearchBar'
 import { FilterPanel } from './FilterPanel'
 import { ArticleList } from './ArticleList'
 import { ArticleDetail } from './ArticleDetail'
+import { AddArticleModal } from './AddArticleModal'
 import { useArticleStore } from '../store/articleStore'
+import type { Article } from '../types/article'
 
 type ViewMode = 'home' | 'articles' | 'tags' | 'favorites' | 'statistics' | 'settings'
 
 export const MainLayout: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('articles')
-  const { selectedArticle, pagination } = useArticleStore((state) => ({
+  const [showAddModal, setShowAddModal] = useState(false)
+  const { selectedArticle, pagination, fetchArticles } = useArticleStore((state) => ({
     selectedArticle: state.selectedArticle,
     pagination: state.pagination,
+    fetchArticles: state.fetchArticles,
   }))
 
   const handleCollect = () => {
     // TODO: 打开采集窗口
     alert('采集文章功能开发中...')
+  }
+
+  const handleManualAdd = () => {
+    setShowAddModal(true)
+  }
+
+  const handleSaveArticle = async (article: Partial<Article>) => {
+    try {
+      await window.api.createArticle(article)
+      // 刷新文章列表
+      await fetchArticles()
+      // 关闭对话框
+      setShowAddModal(false)
+    } catch (error) {
+      console.error('保存文章失败:', error)
+      throw error
+    }
   }
 
   return (
@@ -165,8 +186,8 @@ export const MainLayout: React.FC = () => {
             </div>
           </nav>
 
-          {/* 快捷采集区域 */}
-          <div className="p-4 border-t border-gray-200">
+          {/* 快捷操作区域 */}
+          <div className="p-4 border-t border-gray-200 space-y-2">
             <button
               onClick={handleCollect}
               className="w-full px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium flex items-center justify-center gap-2"
@@ -179,6 +200,20 @@ export const MainLayout: React.FC = () => {
                 />
               </svg>
               采集文章
+            </button>
+
+            <button
+              onClick={handleManualAdd}
+              className="w-full px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              手动添加
             </button>
           </div>
         </aside>
@@ -242,6 +277,13 @@ export const MainLayout: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* 手动添加文章对话框 */}
+      <AddArticleModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSave={handleSaveArticle}
+      />
     </div>
   )
 }

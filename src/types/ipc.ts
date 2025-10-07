@@ -120,6 +120,7 @@ export type WindowType = 'main' | 'float';
 export const IPC_CHANNELS = {
   // 文章相关
   ARTICLE_SCRAPE: 'article:scrape',
+  ARTICLE_CREATE: 'article:create',
   ARTICLE_GET_ALL: 'article:getAll',
   ARTICLE_GET_BY_ID: 'article:getById',
   ARTICLE_DELETE: 'article:delete',
@@ -164,6 +165,7 @@ export const IPC_CHANNELS = {
 export interface IpcApi {
   // 文章相关
   scrapeArticles: (params: ScrapeParams) => Promise<ScrapeResult>;
+  createArticle: (article: Partial<Article>) => Promise<Article>;
   getAllArticles: (limit?: number, offset?: number) => Promise<Article[]>;
   getArticleById: (id: number) => Promise<Article | null>;
   deleteArticle: (id: number) => Promise<boolean>;
