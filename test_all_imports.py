@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
 """
 完整的导入路径测试脚本
 测试项目中所有主要模块的导入是否正常
 """
 import sys
 import os
+import io
+
+# 设置标准输出为UTF-8编码（Windows兼容性）
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 # 添加src/main/python到路径
 current_dir = os.path.dirname(os.path.abspath(__file__))
