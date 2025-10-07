@@ -8,7 +8,7 @@ import { join } from 'path';
 import { registerAllIpcHandlers, unregisterAllIpcHandlers } from './ipc';
 import { floatWindow } from './windows/floatWindow';
 import { windowManager } from './ipc/window';
-import { initializeDirectories, getPlatformInfo, normalizePath } from './utils/platform';
+import { initializeDirectories, getPlatformInfo } from './utils/platform';
 
 // 主窗口实例
 let mainWindow: BrowserWindow | null = null;
