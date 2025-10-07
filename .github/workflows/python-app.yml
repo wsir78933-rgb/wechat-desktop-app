@@ -33,7 +33,12 @@ jobs:
         pip install -r requirements.txt
       continue-on-error: true
 
-    - name: Run tests
+    - name: Run import tests
+      run: |
+        python test_all_imports.py
+      continue-on-error: false
+
+    - name: Run function tests
       run: |
         python test_functions.py || echo "测试完成（部分测试可能失败）"
       continue-on-error: true
