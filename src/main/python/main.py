@@ -52,13 +52,21 @@ def setup_paths():
     # 获取src/main/python目录的绝对路径
     current_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # 将src/main/python添加到Python路径
+    # 将src/main/python添加到Python路径（确保在最前面）
     if current_dir not in sys.path:
         sys.path.insert(0, current_dir)
 
+    # 同时添加项目根目录
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+
     # 打印路径信息（调试用）
-    logging.getLogger(__name__).debug(f"当前工作目录: {os.getcwd()}")
-    logging.getLogger(__name__).debug(f"Python路径: {current_dir}")
+    logger = logging.getLogger(__name__)
+    logger.debug(f"当前工作目录: {os.getcwd()}")
+    logger.debug(f"Python路径(src/main/python): {current_dir}")
+    logger.debug(f"项目根目录: {project_root}")
+    logger.debug(f"完整sys.path: {sys.path}")
 
 
 def setup_database():
