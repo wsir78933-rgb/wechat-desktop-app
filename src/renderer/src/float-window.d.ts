@@ -27,6 +27,10 @@ export interface FloatWindowAPI {
   collectArticle: (url: string) => Promise<Article>;
   getRecentArticles: (limit?: number) => Promise<Article[]>;
   scrapeArticles: (params: ScrapeParams) => Promise<ScrapeResult>;
+  createArticle: (article: Partial<Article>) => Promise<Article>;
+  getAllArticles: (limit?: number, offset?: number) => Promise<Article[]>;
+  searchArticles: (params: { keyword: string; limit?: number; offset?: number }) => Promise<{ articles: Article[]; total: number }>;
+  getSearchSuggestions: (keyword: string) => Promise<string[]>;
 
   // 窗口通信
   openMainWindow: (articleId?: string) => void;
