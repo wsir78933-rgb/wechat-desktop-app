@@ -1,6 +1,17 @@
 # 对标账号管理软件
 
+[![Python Application CI/CD](https://github.com/wsir78933-rgb/wechat-desktop-app/actions/workflows/python-app.yml/badge.svg)](https://github.com/wsir78933-rgb/wechat-desktop-app/actions/workflows/python-app.yml)
+[![Release Build](https://github.com/wsir78933-rgb/wechat-desktop-app/actions/workflows/release.yml/badge.svg)](https://github.com/wsir78933-rgb/wechat-desktop-app/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
+
 一款基于 Python + PyQt5 的桌面应用程序，用于管理对标账号和文章，方便内容创作者进行对标研究和内容收集。
+
+## 📸 界面预览
+
+![主界面](docs/screenshot.png)
+
+> 左右分栏布局，Material Design风格，简洁高效
 
 ## 项目简介
 
