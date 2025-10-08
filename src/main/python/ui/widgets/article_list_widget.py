@@ -19,16 +19,19 @@ class ArticleListWidget(QWidget):
     # 定义信号
     article_deleted = pyqtSignal(int)   # 文章被删除
     article_edited = pyqtSignal(int)    # 文章被编辑
+    article_collected = pyqtSignal(int) # 文章被收藏
 
-    def __init__(self, article_manager=None):
+    def __init__(self, article_manager=None, account_manager=None):
         """
         初始化文章列表组件
 
         Args:
             article_manager: 文章管理器实例(可选,用于mock数据测试)
+            account_manager: 账号管理器实例(可选,用于收藏功能)
         """
         super().__init__()
         self.article_manager = article_manager
+        self.account_manager = account_manager
         self.current_account_id = None
         self.all_articles = []  # 存储所有文章数据
         self.init_ui()
@@ -235,16 +238,14 @@ class ArticleListWidget(QWidget):
         item.setData(Qt.UserRole, article['id'])
         item.setData(Qt.UserRole + 1, article.get('url', ''))  # 存储URL
 
-        # 格式化显示文本，添加链接图标提示可点击
-        text = f"🔗 {article['title']}\n"
+        # 格式化显示文本（隐藏URL，双击打开）
+        text = f"📄 {article['title']}\n"
         text += f"   📅 {article.get('publish_date', '未知')} | ✍️ {article.get('author', '未知')}"
 
+        # 标签直接接在同一行
         tags = article.get('tags', '').strip()
         if tags:
-            text += f"\n   🏷️ {tags}"
-
-        # 添加提示文本
-        text += "\n   💡 双击打开文章链接"
+            text += f" | 🏷️ {tags}"
 
         item.setText(text)
 
@@ -344,6 +345,13 @@ class ArticleListWidget(QWidget):
         open_action = menu.addAction("🔗 在浏览器中打开")
         copy_action = menu.addAction("📋 复制文章链接")
         menu.addSeparator()
+
+        # 收藏到素材库（只在非素材库账号时显示）
+        if self.account_manager and not self._is_material_library():
+            collect_action = menu.addAction("⭐ 收藏到素材库")
+            collect_action.triggered.connect(lambda: self.collect_article(item))
+            menu.addSeparator()
+
         edit_action = menu.addAction("📝 编辑文章信息")
         menu.addSeparator()
         delete_action = menu.addAction("🗑️ 删除此文章")
@@ -524,3 +532,103 @@ class ArticleListWidget(QWidget):
         font.setPointSize(12)
         item.setFont(font)
         self.list_widget.addItem(item)
+
+    def _is_material_library(self):
+        """
+        判断当前账号是否为素材库
+
+        Returns:
+            bool: 是否为素材库
+        """
+        if not self.account_manager or not self.current_account_id:
+            return False
+        return self.account_manager.is_material_library(self.current_account_id)
+
+    def collect_article(self, item: QListWidgetItem):
+        """
+        收藏文章到素材库
+
+        Args:
+            item: 文章项
+        """
+        article_id = item.data(Qt.UserRole)
+
+        # 获取文章信息
+        article = next((a for a in self.all_articles if a['id'] == article_id), None)
+        if not article:
+            QMessageBox.warning(self, "错误", "文章不存在！")
+            return
+
+        # 打开收藏对话框
+        try:
+            from ui.dialogs.collect_dialog import CollectDialog
+            dialog = CollectDialog(self, article_data=article)
+
+            if dialog.exec_():
+                # 获取收藏数据
+                collect_data = dialog.get_data()
+                category = collect_data['category']
+                note = collect_data['note']
+
+                # 获取素材库账号ID
+                if not self.account_manager:
+                    QMessageBox.warning(self, "错误", "账号管理器未初始化！")
+                    return
+
+                material_id = self.account_manager.get_material_library_id()
+                if not material_id:
+                    QMessageBox.warning(self, "错误", "素材库账号不存在！")
+                    return
+
+                # 复制文章到素材库
+                # 合并分类到标签中
+                existing_tags = article.get('tags', '').strip()
+                if existing_tags:
+                    new_tags = f"{existing_tags}, {category}"
+                else:
+                    new_tags = category
+
+                # 合并备注到摘要中
+                existing_summary = article.get('summary', '').strip()
+                if note:
+                    if existing_summary:
+                        new_summary = f"{existing_summary}\n\n【收藏备注】{note}"
+                    else:
+                        new_summary = f"【收藏备注】{note}"
+                else:
+                    new_summary = existing_summary
+
+                # 添加文章到素材库
+                if self.article_manager:
+                    new_article_id = self.article_manager.add_article(
+                        account_id=material_id,
+                        title=article['title'],
+                        url=article['url'],
+                        publish_date=article.get('publish_date'),
+                        cover_image=article.get('cover_image', ''),
+                        summary=new_summary,
+                        tags=new_tags,
+                        author=article.get('author', '')
+                    )
+
+                    if new_article_id:
+                        # 发送收藏信号
+                        self.article_collected.emit(article_id)
+                        QMessageBox.information(
+                            self,
+                            "成功",
+                            f"文章已收藏到素材库！\n分类：{category}"
+                        )
+                    else:
+                        QMessageBox.warning(
+                            self,
+                            "失败",
+                            "收藏失败！可能该文章已在素材库中。"
+                        )
+                else:
+                    QMessageBox.warning(self, "错误", "文章管理器未初始化！")
+
+        except ImportError as e:
+            QMessageBox.warning(self, "错误", f"无法加载收藏对话框：{str(e)}")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"收藏文章时出错：{str(e)}")

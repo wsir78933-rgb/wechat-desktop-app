@@ -103,6 +103,29 @@ class Database:
         self._connection.commit()
         logger.info("数据库表创建完成")
 
+        # 初始化素材库系统账号
+        self._init_material_library()
+
+    def _init_material_library(self):
+        """初始化素材库系统账号"""
+        # 检查素材库账号是否存在
+        cursor = self._connection.execute(
+            "SELECT id FROM accounts WHERE name = ?",
+            ("📚 素材库",)
+        )
+        if cursor.fetchone() is None:
+            # 创建素材库账号
+            self._connection.execute("""
+                INSERT INTO accounts (name, category, description)
+                VALUES (?, ?, ?)
+            """, (
+                "📚 素材库",
+                "系统",
+                "收藏的文章素材，不属于任何对标账号"
+            ))
+            self._connection.commit()
+            logger.info("素材库系统账号创建成功")
+
     def execute(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
         """
         执行SQL语句

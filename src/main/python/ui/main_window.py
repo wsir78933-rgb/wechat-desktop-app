@@ -7,7 +7,8 @@ import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QSplitter, QPushButton, QToolBar,
-    QStatusBar, QMessageBox, QFileDialog, QSizePolicy
+    QStatusBar, QMessageBox, QFileDialog, QSizePolicy,
+    QTabWidget
 )
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
 from PyQt5.QtGui import QIcon, QFont
@@ -69,23 +70,50 @@ class MainWindow(QMainWindow):
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.setHandleWidth(3)
 
-        # 左侧：账号列表组件
+        # 左侧：创建标签页组件（对标账号 / 素材库）
+        self.left_tab_widget = QTabWidget()
+        self.left_tab_widget.setTabPosition(QTabWidget.North)
+
+        # 标签页1：对标账号列表
         try:
             from ui.widgets.account_list_widget import AccountListWidget
             self.account_list_widget = AccountListWidget(account_manager=self.account_manager)
-            self.splitter.addWidget(self.account_list_widget)
+            self.left_tab_widget.addTab(self.account_list_widget, "📋 对标账号")
         except ImportError:
             # 如果组件未创建，使用临时占位组件
             placeholder_left = QWidget()
             placeholder_layout = QVBoxLayout(placeholder_left)
             placeholder_layout.addWidget(QPushButton("账号列表组件\n(待实现)"))
-            self.splitter.addWidget(placeholder_left)
+            self.left_tab_widget.addTab(placeholder_left, "📋 对标账号")
             self.account_list_widget = None
+
+        # 标签页2：素材库分类列表
+        try:
+            from ui.widgets.material_category_widget import MaterialCategoryWidget
+            self.material_category_widget = MaterialCategoryWidget(
+                account_manager=self.account_manager,
+                article_manager=self.article_manager
+            )
+            self.left_tab_widget.addTab(self.material_category_widget, "📚 素材库")
+        except ImportError as e:
+            # 如果组件未创建，使用临时占位组件
+            material_placeholder = QWidget()
+            material_layout = QVBoxLayout(material_placeholder)
+            material_layout.addWidget(QPushButton("📚 素材库分类列表\n(导入失败)"))
+            self.left_tab_widget.addTab(material_placeholder, "📚 素材库")
+            self.material_category_widget = None
+            print(f"加载素材库组件失败: {e}")
+
+        # 将标签页组件添加到分栏
+        self.splitter.addWidget(self.left_tab_widget)
 
         # 右侧：文章列表组件
         try:
             from ui.widgets.article_list_widget import ArticleListWidget
-            self.article_list_widget = ArticleListWidget(article_manager=self.article_manager)
+            self.article_list_widget = ArticleListWidget(
+                article_manager=self.article_manager,
+                account_manager=self.account_manager
+            )
             self.splitter.addWidget(self.article_list_widget)
         except ImportError:
             # 如果组件未创建，使用临时占位组件
@@ -185,11 +213,21 @@ class MainWindow(QMainWindow):
                 self.on_account_deleted
             )
 
+        if self.material_category_widget:
+            # 素材库分类选中信号 -> 加载分类文章
+            self.material_category_widget.category_selected.connect(
+                self.on_material_category_selected
+            )
+
         if self.article_list_widget:
             # 文章编辑信号
             self.article_list_widget.article_edited.connect(
                 self.on_edit_article
             )
+
+        # 标签页切换信号
+        if hasattr(self, 'left_tab_widget'):
+            self.left_tab_widget.currentChanged.connect(self.on_tab_changed)
 
     def on_account_selected(self, account_id: int):
         """账号被选中"""
@@ -202,6 +240,62 @@ class MainWindow(QMainWindow):
         # 清空文章列表
         if self.article_list_widget:
             self.article_list_widget.clear()
+        self.update_statusbar()
+
+    def on_material_category_selected(self, category_type: str, category_value: str):
+        """
+        素材库分类被选中
+
+        Args:
+            category_type: 分类类型 (all/category/time)
+            category_value: 分类值
+        """
+        if not self.article_list_widget or not self.material_category_widget:
+            return
+
+        # 获取素材库账号ID
+        material_id = self.material_category_widget.get_material_library_id()
+        if not material_id:
+            self.article_list_widget.clear()
+            return
+
+        # 加载素材库的文章
+        self.article_list_widget.load_articles(material_id)
+
+        # TODO: 根据分类类型和值进行筛选
+        # 这里先显示所有素材库文章，具体筛选逻辑可以在后续完善
+
+        self.update_statusbar()
+
+    def on_tab_changed(self, index: int):
+        """
+        标签页切换
+
+        Args:
+            index: 标签页索引 (0=对标账号, 1=素材库)
+        """
+        if index == 0:
+            # 切换到对标账号
+            # 清空文章列表或显示当前选中账号的文章
+            if self.account_list_widget:
+                selected_id = self.account_list_widget.get_selected_account_id()
+                if selected_id:
+                    self.on_account_selected(selected_id)
+                else:
+                    if self.article_list_widget:
+                        self.article_list_widget.show_empty_message()
+
+        elif index == 1:
+            # 切换到素材库
+            # 显示当前选中分类的文章
+            if self.material_category_widget:
+                category = self.material_category_widget.get_selected_category()
+                if category:
+                    self.on_material_category_selected(category['type'], category['value'])
+                else:
+                    # 默认显示全部素材
+                    self.on_material_category_selected('all', '')
+
         self.update_statusbar()
 
     def on_edit_account(self, account_id: int):
@@ -541,6 +635,34 @@ class MainWindow(QMainWindow):
 
         QSplitter::handle:hover {
             background-color: #BDBDBD;
+        }
+
+        QTabWidget::pane {
+            border: 1px solid #E0E0E0;
+            border-radius: 4px;
+            background-color: #FFFFFF;
+        }
+
+        QTabBar::tab {
+            background-color: #F5F5F5;
+            color: #666666;
+            border: 1px solid #E0E0E0;
+            border-bottom: none;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            padding: 8px 16px;
+            margin-right: 2px;
+            min-width: 100px;
+        }
+
+        QTabBar::tab:selected {
+            background-color: #FFFFFF;
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        QTabBar::tab:hover {
+            background-color: #E3F2FD;
         }
         """
         self.setStyleSheet(style)

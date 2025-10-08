@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 class AccountManager:
     """账号管理器"""
 
+    # 素材库账号名称（系统常量）
+    MATERIAL_LIBRARY_NAME = "📚 素材库"
+
     def __init__(self, db: Optional[Database] = None):
         """
         初始化账号管理器
@@ -31,6 +34,36 @@ class AccountManager:
             )
             db = Database(db_path)
         self.db = db
+
+    def get_material_library_id(self) -> Optional[int]:
+        """
+        获取素材库账号ID
+
+        Returns:
+            Optional[int]: 素材库账号ID，不存在返回None
+        """
+        try:
+            result = self.db.fetchone(
+                "SELECT id FROM accounts WHERE name = ?",
+                (self.MATERIAL_LIBRARY_NAME,)
+            )
+            return result['id'] if result else None
+        except Exception as e:
+            logger.error(f"获取素材库ID失败: {e}")
+            return None
+
+    def is_material_library(self, account_id: int) -> bool:
+        """
+        判断是否为素材库账号
+
+        Args:
+            account_id: 账号ID
+
+        Returns:
+            bool: 是否为素材库
+        """
+        material_id = self.get_material_library_id()
+        return material_id is not None and account_id == material_id
 
     def add_account(
         self,
@@ -96,6 +129,12 @@ class AccountManager:
         Returns:
             bool: 是否成功
         """
+        # 防止修改素材库账号的名称和分类
+        if self.is_material_library(account_id):
+            if name is not None or category is not None:
+                logger.error("不能修改素材库系统账号的名称和分类")
+                return False
+
         # 构建动态更新语句
         update_fields = []
         params = []
@@ -157,6 +196,11 @@ class AccountManager:
         Returns:
             bool: 是否成功
         """
+        # 防止删除素材库
+        if self.is_material_library(account_id):
+            logger.error("不能删除素材库系统账号")
+            return False
+
         try:
             with transaction(self.db):
                 # 由于设置了外键级联删除，直接删除账号即可
