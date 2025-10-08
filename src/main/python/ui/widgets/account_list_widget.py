@@ -64,8 +64,29 @@ class AccountListWidget(QWidget):
         # 账号列表
         self.list_widget = QListWidget()
         self.list_widget.itemClicked.connect(self.on_item_clicked)
+        self.list_widget.itemDoubleClicked.connect(self.on_item_double_clicked)
         self.list_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.list_widget.customContextMenuRequested.connect(self.show_context_menu)
+
+        # 设置列表样式 - 添加 hover 效果
+        self.list_widget.setStyleSheet("""
+            QListWidget::item {
+                padding: 8px;
+                border-radius: 4px;
+                margin: 2px;
+            }
+            QListWidget::item:hover {
+                background-color: #E3F2FD;
+            }
+            QListWidget::item:selected {
+                background-color: #2196F3;
+                color: white;
+            }
+            QListWidget::item:selected:hover {
+                background-color: #1976D2;
+            }
+        """)
+
         layout.addWidget(self.list_widget)
 
         # 操作按钮
@@ -152,11 +173,15 @@ class AccountListWidget(QWidget):
 
         # 格式化显示文本
         article_count = account.get('article_count', 0)
-        latest_date = account.get('latest_date', '暂无')
+        description = account.get('description', '暂无描述')
+
+        # 限制描述长度，避免显示过长
+        if len(description) > 30:
+            description = description[:30] + '...'
 
         text = f"👤 {account['name']}\n"
         text += f"   {account['category']} | {article_count}篇\n"
-        text += f"   最新: {latest_date}"
+        text += f"   {description}"
 
         item.setText(text)
 
@@ -213,6 +238,18 @@ class AccountListWidget(QWidget):
 
         # 发送信号
         self.account_selected.emit(account_id)
+
+    def on_item_double_clicked(self, item: QListWidgetItem):
+        """
+        账号项被双击 - 打开编辑对话框
+
+        Args:
+            item: 被双击的项
+        """
+        account_id = item.data(Qt.UserRole)
+        self.current_account_id = account_id
+        # 发送编辑信号
+        self.account_edited.emit(account_id)
 
     def show_context_menu(self, pos):
         """
