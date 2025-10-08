@@ -59,6 +59,7 @@ jobs:
             'core.account_manager',
             'core.article_manager',
             'core.export_manager',
+            'core.import_manager',
             # Utils模块
             'utils',
             'utils.logger',
@@ -143,6 +144,7 @@ jobs:
           ### 功能特性
           - 账号管理（添加、编辑、删除）
           - 文章管理（添加、编辑、删除、搜索）
+          - 数据导入（Excel、JSON）
           - 数据导出（Excel、JSON、Markdown）
           - 左右分栏界面
           - Material Design风格
