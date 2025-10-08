@@ -40,6 +40,47 @@
 | validators | 0.20+ | URL验证 |
 | python-dateutil | 2.8+ | 日期处理 |
 
+## 快速开始
+
+### 📦 方式一：下载可执行文件（推荐）
+
+1. 访问 [Releases 页面](https://github.com/wsir78933-rgb/wechat-desktop-app/releases)
+2. 下载最新版本的 `对标账号管理软件-windows.zip`
+3. 解压到任意目录
+4. 双击 `对标账号管理软件.exe` 运行
+
+#### ⚠️ 杀毒软件误报说明
+
+**如果 Windows Defender 提示病毒警告，这是误报（False Positive），请放心使用。**
+
+<details>
+<summary>为什么会误报？如何解决？（点击展开）</summary>
+
+**原因：**
+- PyInstaller 使用压缩和自解压技术（与某些恶意软件特征相似）
+- 可执行文件未进行代码签名（需要购买证书）
+- 包含完整 Python 解释器
+
+**验证安全性：**
+1. 查看 [GitHub Actions 构建日志](https://github.com/wsir78933-rgb/wechat-desktop-app/actions) - 所有构建过程透明可审计
+2. 检查源代码 - 完全开源，没有恶意代码
+3. 上传到 [VirusTotal](https://www.virustotal.com/) 进行多引擎扫描
+
+**解决方法：**
+```powershell
+# 方法1: 添加到 Windows Defender 白名单
+Windows 安全中心 → 病毒和威胁防护 → 排除项 → 添加文件
+
+# 方法2: 下载后右键 → 属性 → 解除阻止
+右键 .zip 文件 → 属性 → 勾选"解除阻止" → 应用 → 确定
+```
+
+</details>
+
+---
+
+### 💻 方式二：从源代码运行（开发者）
+
 ## 安装说明
 
 ### 1. 环境要求
