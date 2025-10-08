@@ -76,8 +76,35 @@ class ArticleListWidget(QWidget):
         self.list_widget = QListWidget()
         self.list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)  # 支持多选
         self.list_widget.itemDoubleClicked.connect(self.open_article)
+        self.list_widget.itemClicked.connect(self.on_item_clicked)  # 单击也能跳转
         self.list_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.list_widget.customContextMenuRequested.connect(self.show_context_menu)
+
+        # 设置悬浮高亮样式
+        self.list_widget.setStyleSheet("""
+            QListWidget {
+                background-color: #FFFFFF;
+                border: 1px solid #E0E0E0;
+                border-radius: 4px;
+            }
+            QListWidget::item {
+                padding: 8px;
+                border-bottom: 1px solid #F0F0F0;
+                cursor: pointer;
+            }
+            QListWidget::item:hover {
+                background-color: #E3F2FD;
+                border-left: 3px solid #2196F3;
+            }
+            QListWidget::item:selected {
+                background-color: #BBDEFB;
+                border-left: 3px solid #1976D2;
+            }
+            QListWidget::item:selected:hover {
+                background-color: #90CAF9;
+            }
+        """)
+
         layout.addWidget(self.list_widget)
 
         # 批量操作按钮
@@ -209,13 +236,16 @@ class ArticleListWidget(QWidget):
         item.setData(Qt.UserRole, article['id'])
         item.setData(Qt.UserRole + 1, article.get('url', ''))  # 存储URL
 
-        # 格式化显示文本
-        text = f"📄 {article['title']}\n"
-        text += f"   {article.get('publish_date', '未知')} | {article.get('author', '未知')}"
+        # 格式化显示文本，添加链接图标提示可点击
+        text = f"🔗 {article['title']}\n"
+        text += f"   📅 {article.get('publish_date', '未知')} | ✍️ {article.get('author', '未知')}"
 
         tags = article.get('tags', '').strip()
         if tags:
             text += f"\n   🏷️ {tags}"
+
+        # 添加提示文本
+        text += "\n   💡 单击或双击打开文章链接"
 
         item.setText(text)
 
@@ -223,6 +253,9 @@ class ArticleListWidget(QWidget):
         font = QFont()
         font.setPointSize(10)
         item.setFont(font)
+
+        # 设置工具提示
+        item.setToolTip(f"点击打开: {article.get('url', '无链接')}")
 
         self.list_widget.addItem(item)
 
@@ -278,6 +311,16 @@ class ArticleListWidget(QWidget):
         self.list_widget.clear()
         for article in self.all_articles:
             self._add_article_item(article)
+
+    def on_item_clicked(self, item: QListWidgetItem):
+        """
+        单击文章项时的处理（跳转到文章链接）
+
+        Args:
+            item: 文章项
+        """
+        # 单击也直接打开文章
+        self.open_article(item)
 
     def open_article(self, item: QListWidgetItem):
         """
