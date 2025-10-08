@@ -477,6 +477,11 @@ class ArticleListWidget(QWidget):
         self.title_label.setText("文章列表 (0)")
         self.selection_label.setText("未选中任何文章")
 
+    def refresh_current_articles(self):
+        """刷新当前账号的文章列表"""
+        if self.current_account_id:
+            self.load_articles(self.current_account_id)
+
     def show_empty_message(self):
         """显示空状态提示"""
         self.clear()
