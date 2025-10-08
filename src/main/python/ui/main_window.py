@@ -7,7 +7,7 @@ import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QSplitter, QPushButton, QToolBar,
-    QStatusBar, QMessageBox, QFileDialog
+    QStatusBar, QMessageBox, QFileDialog, QSizePolicy
 )
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
 from PyQt5.QtGui import QIcon, QFont
@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
 
         # 添加弹性空间，让右侧按钮靠右对齐
         spacer = QWidget()
-        spacer.setSizePolicy(QWidget.Expanding, QWidget.Expanding)
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         toolbar.addWidget(spacer)
 
         # 设置按钮
