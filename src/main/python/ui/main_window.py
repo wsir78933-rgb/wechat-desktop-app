@@ -6,7 +6,7 @@
 import sys
 from PyQt5.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QSplitter, QPushButton, QAction, QMenuBar, QToolBar,
+    QSplitter, QPushButton, QToolBar,
     QStatusBar, QMessageBox, QFileDialog
 )
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
@@ -23,7 +23,6 @@ class MainWindow(QMainWindow):
         self.init_managers()
 
         self.init_ui()
-        self.create_menu_bar()
         self.create_toolbar()
         self.create_statusbar()
         self.connect_signals()
@@ -108,69 +107,6 @@ class MainWindow(QMainWindow):
         # 应用样式
         self.apply_styles()
 
-    def create_menu_bar(self):
-        """创建菜单栏"""
-        menubar = self.menuBar()
-
-        # 文件菜单
-        file_menu = menubar.addMenu("文件(&F)")
-
-        # 导出操作
-        export_action = QAction("导出数据(&E)", self)
-        export_action.setShortcut("Ctrl+E")
-        export_action.triggered.connect(self.export_data)
-        file_menu.addAction(export_action)
-
-        file_menu.addSeparator()
-
-        # 退出操作
-        exit_action = QAction("退出(&X)", self)
-        exit_action.setShortcut("Ctrl+Q")
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
-
-        # 编辑菜单
-        edit_menu = menubar.addMenu("编辑(&E)")
-
-        # 添加账号
-        add_account_action = QAction("添加账号(&A)", self)
-        add_account_action.setShortcut("Ctrl+N")
-        add_account_action.triggered.connect(self.add_account)
-        edit_menu.addAction(add_account_action)
-
-        # 添加文章
-        add_article_action = QAction("添加文章(&T)", self)
-        add_article_action.setShortcut("Ctrl+T")
-        add_article_action.triggered.connect(self.add_article)
-        edit_menu.addAction(add_article_action)
-
-        edit_menu.addSeparator()
-
-        # 刷新
-        refresh_action = QAction("刷新(&R)", self)
-        refresh_action.setShortcut("F5")
-        refresh_action.triggered.connect(self.refresh_data)
-        edit_menu.addAction(refresh_action)
-
-        # 查看菜单
-        view_menu = menubar.addMenu("查看(&V)")
-
-        # 工具菜单
-        tools_menu = menubar.addMenu("工具(&T)")
-
-        # 设置操作
-        settings_action = QAction("设置(&S)", self)
-        settings_action.triggered.connect(self.show_settings)
-        tools_menu.addAction(settings_action)
-
-        # 帮助菜单
-        help_menu = menubar.addMenu("帮助(&H)")
-
-        # 关于操作
-        about_action = QAction("关于(&A)", self)
-        about_action.triggered.connect(self.show_about)
-        help_menu.addAction(about_action)
-
     def create_toolbar(self):
         """创建工具栏"""
         toolbar = QToolBar("主工具栏")
@@ -204,13 +140,22 @@ class MainWindow(QMainWindow):
         export_btn.clicked.connect(self.export_data)
         toolbar.addWidget(export_btn)
 
-        toolbar.addSeparator()
+        # 添加弹性空间，让右侧按钮靠右对齐
+        spacer = QWidget()
+        spacer.setSizePolicy(QWidget.Expanding, QWidget.Expanding)
+        toolbar.addWidget(spacer)
 
         # 设置按钮
         settings_btn = QPushButton("⚙️ 设置")
         settings_btn.setFixedHeight(32)
         settings_btn.clicked.connect(self.show_settings)
         toolbar.addWidget(settings_btn)
+
+        # 帮助按钮
+        help_btn = QPushButton("❓ 帮助")
+        help_btn.setFixedHeight(32)
+        help_btn.clicked.connect(self.show_about)
+        toolbar.addWidget(help_btn)
 
     def create_statusbar(self):
         """创建状态栏"""
