@@ -42,13 +42,40 @@ jobs:
             'PyQt5.QtCore',
             'PyQt5.QtGui',
             'PyQt5.QtWidgets',
+            'PyQt5.sip',
+            # UI模块
             'ui',
             'ui.main_window',
+            'ui.styles',
+            'ui.widgets',
+            'ui.widgets.account_list_widget',
+            'ui.widgets.article_list_widget',
+            'ui.dialogs',
+            'ui.dialogs.add_account_dialog',
+            'ui.dialogs.add_article_dialog',
+            # Core模块
             'core',
+            'core.database',
+            'core.account_manager',
+            'core.article_manager',
+            'core.export_manager',
+            # Utils模块
             'utils',
+            'utils.logger',
+            'utils.config',
+            'utils.validators',
+            # 标准库
             'logging',
             'sqlite3',
+            'json',
+            'datetime',
+            # 第三方库
             'openpyxl',
+            'openpyxl.styles',
+            'openpyxl.utils',
+            'validators',
+            'dateutil',
+            'dateutil.parser',
         ]
 
         a = Analysis(

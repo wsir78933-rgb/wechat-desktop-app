@@ -76,4 +76,4 @@ htmlcov/
 .pytest_cache/
 
 # Distribution
-*.spec
+# *.spec  # 保留 build.spec 用于打包配置
