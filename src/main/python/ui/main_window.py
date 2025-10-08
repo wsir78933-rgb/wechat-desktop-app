@@ -18,6 +18,10 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        # 初始化数据库和管理器
+        self.init_managers()
+
         self.init_ui()
         self.create_menu_bar()
         self.create_toolbar()
@@ -26,6 +30,25 @@ class MainWindow(QMainWindow):
 
         # 延迟加载数据
         QTimer.singleShot(100, self.load_initial_data)
+
+    def init_managers(self):
+        """初始化数据库和管理器"""
+        import os
+        from core.database import Database
+        from core.account_manager import AccountManager
+        from core.article_manager import ArticleManager
+
+        # 获取数据库路径
+        current_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+        data_dir = os.path.join(current_dir, "data")
+        os.makedirs(data_dir, exist_ok=True)
+
+        db_path = os.path.join(data_dir, "database.db")
+
+        # 初始化数据库和管理器
+        self.db = Database(db_path)
+        self.account_manager = AccountManager(self.db)
+        self.article_manager = ArticleManager(self.db)
 
     def init_ui(self):
         """初始化UI"""
@@ -50,7 +73,7 @@ class MainWindow(QMainWindow):
         # 左侧：账号列表组件
         try:
             from ui.widgets.account_list_widget import AccountListWidget
-            self.account_list_widget = AccountListWidget()
+            self.account_list_widget = AccountListWidget(account_manager=self.account_manager)
             self.splitter.addWidget(self.account_list_widget)
         except ImportError:
             # 如果组件未创建，使用临时占位组件
@@ -63,7 +86,7 @@ class MainWindow(QMainWindow):
         # 右侧：文章列表组件
         try:
             from ui.widgets.article_list_widget import ArticleListWidget
-            self.article_list_widget = ArticleListWidget()
+            self.article_list_widget = ArticleListWidget(article_manager=self.article_manager)
             self.splitter.addWidget(self.article_list_widget)
         except ImportError:
             # 如果组件未创建，使用临时占位组件

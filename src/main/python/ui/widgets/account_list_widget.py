@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QMenu, QMessageBox
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QKeyEvent
 
 
 class AccountListWidget(QWidget):
@@ -320,3 +320,19 @@ class AccountListWidget(QWidget):
         self.current_account_id = None
         self.edit_btn.setEnabled(False)
         self.delete_btn.setEnabled(False)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """
+        处理键盘事件
+
+        Args:
+            event: 键盘事件
+        """
+        # 按下 Delete 键时删除选中的账号
+        if event.key() == Qt.Key_Delete:
+            if self.current_account_id:
+                self.on_delete_clicked()
+            event.accept()
+        else:
+            # 其他按键交给父类处理
+            super().keyPressEvent(event)
