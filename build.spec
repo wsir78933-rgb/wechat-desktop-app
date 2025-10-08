@@ -34,6 +34,7 @@ hidden_imports = [
     'core.account_manager',
     'core.article_manager',
     'core.export_manager',
+    'core.import_manager',
     # Utils模块
     'utils',
     'utils.logger',

@@ -134,6 +134,12 @@ class MainWindow(QMainWindow):
         refresh_btn.clicked.connect(self.refresh_data)
         toolbar.addWidget(refresh_btn)
 
+        # 导入按钮
+        import_btn = QPushButton("📥 导入")
+        import_btn.setFixedHeight(32)
+        import_btn.clicked.connect(self.import_data)
+        toolbar.addWidget(import_btn)
+
         # 导出按钮
         export_btn = QPushButton("📤 导出")
         export_btn.setFixedHeight(32)
@@ -355,6 +361,65 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "提示", "添加文章对话框未实现")
         except Exception as e:
             QMessageBox.critical(self, "错误", f"添加文章时出错：{str(e)}")
+
+    def import_data(self):
+        """导入数据"""
+        from core.import_manager import ImportManager
+
+        # 选择导入文件格式
+        file_filter = "Excel文件 (*.xlsx);;JSON文件 (*.json);;所有支持的文件 (*.xlsx *.json)"
+        file_path, selected_filter = QFileDialog.getOpenFileName(
+            self,
+            "导入数据",
+            "",
+            file_filter
+        )
+
+        if file_path:
+            # 确认导入
+            reply = QMessageBox.question(
+                self,
+                '确认导入',
+                "导入数据会将文件中的账号和文章添加到数据库。\n\n重复的账号将被跳过，是否继续？",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+
+            if reply == QMessageBox.No:
+                return
+
+            try:
+                # 根据文件类型导入
+                imported_accounts = 0
+                imported_articles = 0
+                errors = []
+
+                if file_path.endswith('.xlsx'):
+                    imported_accounts, imported_articles, errors = ImportManager.import_from_excel(
+                        file_path, self.account_manager, self.article_manager
+                    )
+                elif file_path.endswith('.json'):
+                    imported_accounts, imported_articles, errors = ImportManager.import_from_json(
+                        file_path, self.account_manager, self.article_manager
+                    )
+                else:
+                    QMessageBox.warning(self, "错误", "不支持的文件格式！")
+                    return
+
+                # 刷新界面
+                self.refresh_data()
+
+                # 显示导入结果
+                result_msg = f"导入完成！\n\n账号：{imported_accounts} 个\n文章：{imported_articles} 篇"
+                if errors:
+                    result_msg += f"\n\n错误 ({len(errors)} 个)：\n" + "\n".join(errors[:5])
+                    if len(errors) > 5:
+                        result_msg += f"\n...还有 {len(errors) - 5} 个错误"
+
+                QMessageBox.information(self, "导入结果", result_msg)
+
+            except Exception as e:
+                QMessageBox.critical(self, "错误", f"导入失败: {str(e)}")
 
     def export_data(self):
         """导出数据"""
