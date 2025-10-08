@@ -37,17 +37,37 @@ jobs:
       run: |
         Compress-Archive -Path dist/对标账号管理软件.exe -DestinationPath 对标账号管理软件-windows.zip
 
+    - name: Install Inno Setup
+      run: |
+        choco install innosetup -y
+
+    - name: Build Windows Installer
+      run: |
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
     - name: Upload to Release
       uses: softprops/action-gh-release@v1
       with:
-        files: 对标账号管理软件-windows.zip
+        files: |
+          对标账号管理软件-windows.zip
+          output/installer/对标账号管理软件-setup-*.exe
         body: |
           ## 对标账号管理软件 - Windows版本
 
-          ### 安装说明
-          1. 下载 `对标账号管理软件-windows.zip`
-          2. 解压到任意目录
-          3. 双击 `对标账号管理软件.exe` 运行
+          ### 📦 下载方式
+
+          **推荐：安装程序版本（setup.exe）**
+          - ✅ 自动创建开始菜单快捷方式
+          - ✅ 自动创建桌面快捷方式（可选）
+          - ✅ 完整的卸载功能
+          - ✅ 专业的安装向导界面
+
+          下载 `对标账号管理软件-setup-*.exe`，双击运行安装向导
+
+          **便携版本（zip）**
+          - 下载 `对标账号管理软件-windows.zip`
+          - 解压到任意目录
+          - 双击 `对标账号管理软件.exe` 运行
 
           ### 功能特性
           - 账号管理（添加、编辑、删除）

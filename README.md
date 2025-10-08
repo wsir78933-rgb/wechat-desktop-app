@@ -44,10 +44,18 @@
 
 ### 📦 方式一：下载可执行文件（推荐）
 
-1. 访问 [Releases 页面](https://github.com/wsir78933-rgb/wechat-desktop-app/releases)
-2. 下载最新版本的 `对标账号管理软件-windows.zip`
-3. 解压到任意目录
-4. 双击 `对标账号管理软件.exe` 运行
+访问 [Releases 页面](https://github.com/wsir78933-rgb/wechat-desktop-app/releases) 选择下载方式：
+
+**推荐：安装程序版本（setup.exe）**
+1. 下载最新版本的 `对标账号管理软件-setup-*.exe`
+2. 双击运行安装向导
+3. 按照提示完成安装
+4. 从开始菜单或桌面快捷方式启动
+
+**便携版本（zip）**
+1. 下载最新版本的 `对标账号管理软件-windows.zip`
+2. 解压到任意目录
+3. 双击 `对标账号管理软件.exe` 运行
 
 #### ⚠️ 杀毒软件误报说明
 
