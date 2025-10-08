@@ -15,18 +15,30 @@ import re
 class AddArticleDialog(QDialog):
     """添加/编辑文章对话框"""
 
-    def __init__(self, parent=None, article_data=None, accounts=None):
+    def __init__(self, parent=None, article_data=None, accounts=None, account_manager=None):
         """
         初始化对话框
 
         Args:
             parent: 父窗口
             article_data: 文章数据(编辑模式时传入)
-            accounts: 账号列表
+            accounts: 账号列表（可选，如果提供account_manager则自动获取）
+            account_manager: 账号管理器（可选，用于获取账号列表）
         """
         super().__init__(parent)
         self.article_data = article_data
-        self.accounts = accounts or []
+        self.account_manager = account_manager
+
+        # 如果传入了account_manager，从中获取账号列表
+        if account_manager:
+            try:
+                self.accounts = account_manager.get_all_accounts()
+            except Exception as e:
+                print(f"获取账号列表失败: {e}")
+                self.accounts = accounts or []
+        else:
+            self.accounts = accounts or []
+
         self.is_edit_mode = article_data is not None
         self.continue_adding = False
         self.init_ui()
