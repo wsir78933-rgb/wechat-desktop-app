@@ -225,12 +225,109 @@ class MainWindow(QMainWindow):
             self.account_list_widget.account_selected.connect(
                 self.on_account_selected
             )
+            # 账号编辑信号
+            self.account_list_widget.account_edited.connect(
+                self.on_edit_account
+            )
+            # 账号删除信号
+            self.account_list_widget.account_deleted.connect(
+                self.on_account_deleted
+            )
+
+        if self.article_list_widget:
+            # 文章编辑信号
+            self.article_list_widget.article_edited.connect(
+                self.on_edit_article
+            )
 
     def on_account_selected(self, account_id: int):
         """账号被选中"""
         if self.article_list_widget:
             self.article_list_widget.load_articles(account_id)
             self.update_statusbar()
+
+    def on_account_deleted(self, account_id: int):
+        """账号被删除"""
+        # 清空文章列表
+        if self.article_list_widget:
+            self.article_list_widget.clear()
+        self.update_statusbar()
+
+    def on_edit_account(self, account_id: int):
+        """编辑账号"""
+        try:
+            # 获取账号信息
+            account = self.account_manager.get_account(account_id)
+            if not account:
+                QMessageBox.warning(self, "错误", "账号不存在！")
+                return
+
+            from ui.dialogs.add_account_dialog import AddAccountDialog
+            dialog = AddAccountDialog(self, account_data=account)
+
+            if dialog.exec_():
+                # 获取数据
+                data = dialog.get_data()
+
+                # 更新数据库
+                success = self.account_manager.update_account(
+                    account_id=account_id,
+                    name=data['name'],
+                    category=data['category'],
+                    description=data['description'],
+                    avatar_url=data['avatar_url']
+                )
+
+                if success:
+                    # 刷新列表
+                    self.refresh_data()
+                    QMessageBox.information(self, "成功", "账号更新成功！")
+                else:
+                    QMessageBox.warning(self, "错误", "账号更新失败！")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"编辑账号时出错：{str(e)}")
+
+    def on_edit_article(self, article_id: int):
+        """编辑文章"""
+        try:
+            # 获取文章信息
+            article = self.article_manager.get_article(article_id)
+            if not article:
+                QMessageBox.warning(self, "错误", "文章不存在！")
+                return
+
+            from ui.dialogs.add_article_dialog import AddArticleDialog
+            dialog = AddArticleDialog(
+                self,
+                account_manager=self.account_manager,
+                article_data=article
+            )
+
+            if dialog.exec_():
+                # 获取数据
+                data = dialog.get_data()
+
+                # 更新数据库
+                success = self.article_manager.update_article(
+                    article_id=article_id,
+                    account_id=data['account_id'],
+                    title=data['title'],
+                    url=data['url'],
+                    publish_date=data['publish_date'],
+                    cover_image=data['cover_image'],
+                    summary=data['summary'],
+                    tags=data['tags'],
+                    author=data['author']
+                )
+
+                if success:
+                    # 刷新列表
+                    self.refresh_data()
+                    QMessageBox.information(self, "成功", "文章更新成功！")
+                else:
+                    QMessageBox.warning(self, "错误", "文章更新失败！")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"编辑文章时出错：{str(e)}")
 
     def load_initial_data(self):
         """加载初始数据"""
@@ -256,51 +353,68 @@ class MainWindow(QMainWindow):
             dialog = AddAccountDialog(self)
 
             if dialog.exec_():
-                # 验证数据
-                if not dialog.validate():
-                    return
-
                 # 获取数据
                 data = dialog.get_data()
 
-                # TODO: 保存到数据库
-                # account_manager.add_account(data)
+                # 保存到数据库
+                account_id = self.account_manager.add_account(
+                    name=data['name'],
+                    category=data['category'],
+                    description=data['description'],
+                    avatar_url=data['avatar_url']
+                )
 
-                # 刷新列表
-                if self.account_list_widget:
-                    self.account_list_widget.load_accounts()
+                if account_id:
+                    # 刷新列表
+                    if self.account_list_widget:
+                        self.account_list_widget.load_accounts()
 
-                QMessageBox.information(self, "成功", "账号添加成功！")
-                self.update_statusbar()
+                    QMessageBox.information(self, "成功", "账号添加成功！")
+                    self.update_statusbar()
+                else:
+                    QMessageBox.warning(self, "错误", "账号添加失败，请检查账号名称是否重复！")
         except ImportError:
             QMessageBox.warning(self, "提示", "添加账号对话框未实现")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"添加账号时出错：{str(e)}")
 
     def add_article(self):
         """添加文章"""
         try:
             from ui.dialogs.add_article_dialog import AddArticleDialog
-            dialog = AddArticleDialog(self)
+            dialog = AddArticleDialog(self, account_manager=self.account_manager)
 
             if dialog.exec_():
-                # 验证数据
-                if not dialog.validate():
-                    return
-
                 # 获取数据
                 data = dialog.get_data()
 
-                # TODO: 保存到数据库
-                # article_manager.add_article(data)
+                # 保存到数据库
+                article_id = self.article_manager.add_article(
+                    account_id=data['account_id'],
+                    title=data['title'],
+                    url=data['url'],
+                    publish_date=data['publish_date'],
+                    cover_image=data['cover_image'],
+                    summary=data['summary'],
+                    tags=data['tags'],
+                    author=data['author']
+                )
 
-                # 刷新列表
-                self.refresh_data()
-
-                QMessageBox.information(self, "成功", "文章添加成功！")
+                if article_id:
+                    # 刷新列表
+                    self.refresh_data()
+                    QMessageBox.information(self, "成功", "文章添加成功！")
+                else:
+                    QMessageBox.warning(self, "错误", "文章添加失败，请检查URL是否重复或账号是否存在！")
         except ImportError:
             QMessageBox.warning(self, "提示", "添加文章对话框未实现")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"添加文章时出错：{str(e)}")
 
     def export_data(self):
         """导出数据"""
+        from core.export_manager import ExportManager
+
         # 选择导出格式
         file_filter = "Excel文件 (*.xlsx);;JSON文件 (*.json);;Markdown文件 (*.md)"
         file_path, selected_filter = QFileDialog.getSaveFileName(
@@ -312,9 +426,28 @@ class MainWindow(QMainWindow):
 
         if file_path:
             try:
-                # TODO: 实现导出逻辑
-                # export_manager.export_to_file(file_path, selected_filter)
-                QMessageBox.information(self, "成功", f"数据已导出到: {file_path}")
+                # 获取所有账号和文章
+                accounts = self.account_manager.get_all_accounts()
+
+                # 获取所有账号的文章
+                all_articles = []
+                for account in accounts:
+                    articles = self.article_manager.get_articles_by_account(account['id'])
+                    all_articles.extend(articles)
+
+                # 根据文件类型导出
+                success = False
+                if selected_filter == "Excel文件 (*.xlsx)" or file_path.endswith('.xlsx'):
+                    success = ExportManager.export_to_excel(accounts, all_articles, file_path)
+                elif selected_filter == "JSON文件 (*.json)" or file_path.endswith('.json'):
+                    success = ExportManager.export_to_json(accounts, all_articles, file_path)
+                elif selected_filter == "Markdown文件 (*.md)" or file_path.endswith('.md'):
+                    success = ExportManager.export_to_markdown(accounts, all_articles, file_path)
+
+                if success:
+                    QMessageBox.information(self, "成功", f"数据已导出到: {file_path}")
+                else:
+                    QMessageBox.warning(self, "失败", "导出数据失败，请查看日志！")
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"导出失败: {str(e)}")
 
