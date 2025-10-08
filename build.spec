@@ -94,5 +94,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,  # 如果有图标文件，可以在这里指定
+    icon='icon.ico',  # 应用程序图标
 )
