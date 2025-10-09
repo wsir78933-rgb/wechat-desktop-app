@@ -5,10 +5,10 @@
 from PyQt5.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout,
     QListWidget, QListWidgetItem, QLineEdit,
-    QPushButton, QMessageBox
+    QPushButton, QMessageBox, QLabel
 )
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QCursor
 from datetime import datetime, timedelta
 
 
@@ -18,9 +18,13 @@ class MaterialCategoryWidget(QWidget):
     # 定义信号
     category_selected = pyqtSignal(str, str)  # (分类类型, 分类值)
 
-    # 系统分类（不可编辑/删除）
+    # 系统分类（不可编辑/删除）- 显示在列表中的
     SYSTEM_CATEGORIES = [
         {"id": "all", "name": "📚 全部素材", "type": "all", "value": "", "system": True},
+    ]
+
+    # 时间过滤器（显示在底部的小字）
+    TIME_FILTERS = [
         {"id": "this_week", "name": "📅 本周添加", "type": "time", "value": "week", "system": True},
         {"id": "this_month", "name": "📆 本月添加", "type": "time", "value": "month", "system": True},
     ]
@@ -52,10 +56,18 @@ class MaterialCategoryWidget(QWidget):
         self.load_categories_from_storage()
 
     def init_ui(self):
-        """初始化UI"""
+        """初始化UI - Fluent Design 风格"""
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(8)
+        layout.setContentsMargins(8, 8, 8, 8)
+        layout.setSpacing(12)
+
+        # 设置整体背景
+        self.setStyleSheet("""
+            MaterialCategoryWidget {
+                background-color: #FAFAFA;
+                border-radius: 8px;
+            }
+        """)
 
         # 标题栏
         title_layout = QHBoxLayout()
@@ -66,53 +78,200 @@ class MaterialCategoryWidget(QWidget):
             QLineEdit {
                 border: none;
                 background-color: transparent;
-                font-size: 16px;
+                font-size: 18px;
                 font-weight: bold;
-                color: #333333;
+                color: #1A1A1A;
+                padding: 4px 8px;
             }
         """)
         title_layout.addWidget(title_label)
         layout.addLayout(title_layout)
 
-        # 搜索框
+        # 搜索框 - Fluent Design 风格
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("🔍 搜索分类...")
+        self.search_box.setFixedHeight(40)
+        self.search_box.setStyleSheet("""
+            QLineEdit {
+                background-color: white;
+                border: 2px solid #E0E0E0;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 13px;
+                color: #333333;
+            }
+            QLineEdit:hover {
+                border-color: #B0B0B0;
+            }
+            QLineEdit:focus {
+                border-color: #0078D4;
+                background-color: #FFFFFF;
+            }
+            QLineEdit::placeholder {
+                color: #999999;
+            }
+        """)
         self.search_box.textChanged.connect(self.filter_categories)
         layout.addWidget(self.search_box)
 
-        # 分类列表
+        # 分类列表 - Fluent Design 风格
         self.list_widget = QListWidget()
         self.list_widget.itemClicked.connect(self.on_item_clicked)
 
-        # 设置列表样式 - 添加 hover 效果
+        # 设置列表样式 - Fluent Design 风格
         self.list_widget.setStyleSheet("""
+            QListWidget {
+                background-color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 4px;
+            }
             QListWidget::item {
-                padding: 12px;
-                border-radius: 4px;
-                margin: 2px;
+                padding: 16px 12px;
+                border-radius: 6px;
+                margin: 3px 2px;
+                color: #333333;
+                font-size: 13px;
             }
             QListWidget::item:hover {
-                background-color: #E3F2FD;
+                background-color: #F3F3F3;
             }
             QListWidget::item:selected {
-                background-color: #2196F3;
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #0078D4,
+                    stop:1 #005A9E
+                );
                 color: white;
+                border: none;
             }
             QListWidget::item:selected:hover {
-                background-color: #1976D2;
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #106EBE,
+                    stop:1 #00477D
+                );
             }
         """)
 
         layout.addWidget(self.list_widget)
 
-        # 操作按钮
+        # 操作按钮 - Fluent Design 风格
         btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(8)
+
+        # 新增按钮 - Fluent 风格渐变
         self.add_btn = QPushButton("➕ 新增")
-        self.add_btn.setFixedHeight(32)
+        self.add_btn.setFixedHeight(38)
+        self.add_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4CAF50,
+                    stop:1 #45A049
+                );
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #45A049,
+                    stop:1 #3D8B40
+                );
+            }
+            QPushButton:pressed {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #3D8B40,
+                    stop:1 #2E7D32
+                );
+                padding-top: 9px;
+                padding-bottom: 7px;
+            }
+        """)
+
+        # 编辑按钮 - Fluent 风格渐变
         self.edit_btn = QPushButton("📝 编辑")
-        self.edit_btn.setFixedHeight(32)
+        self.edit_btn.setFixedHeight(38)
+        self.edit_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #0078D4,
+                    stop:1 #005A9E
+                );
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover:enabled {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #106EBE,
+                    stop:1 #00477D
+                );
+            }
+            QPushButton:pressed:enabled {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #005A9E,
+                    stop:1 #003D6B
+                );
+                padding-top: 9px;
+                padding-bottom: 7px;
+            }
+            QPushButton:disabled {
+                background-color: #D0D0D0;
+                color: #888888;
+            }
+        """)
+
+        # 删除按钮 - Fluent 风格渐变
         self.delete_btn = QPushButton("🗑️ 删除")
-        self.delete_btn.setFixedHeight(32)
+        self.delete_btn.setFixedHeight(38)
+        self.delete_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #E81123,
+                    stop:1 #C50F1F
+                );
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+            QPushButton:hover:enabled {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #D32F2F,
+                    stop:1 #B71C1C
+                );
+            }
+            QPushButton:pressed:enabled {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #C50F1F,
+                    stop:1 #A00F1F
+                );
+                padding-top: 9px;
+                padding-bottom: 7px;
+            }
+            QPushButton:disabled {
+                background-color: #D0D0D0;
+                color: #888888;
+            }
+        """)
 
         self.add_btn.clicked.connect(self.on_add_clicked)
         self.edit_btn.clicked.connect(self.on_edit_clicked)
@@ -126,6 +285,62 @@ class MaterialCategoryWidget(QWidget):
         btn_layout.addWidget(self.edit_btn)
         btn_layout.addWidget(self.delete_btn)
         layout.addLayout(btn_layout)
+
+        # 时间过滤器 - Fluent Design 风格
+        time_filter_layout = QHBoxLayout()
+        time_filter_layout.setContentsMargins(8, 12, 8, 8)
+        time_filter_layout.setSpacing(12)
+
+        filter_label = QLabel("快速筛选：")
+        filter_label.setStyleSheet("""
+            QLabel {
+                color: #666666;
+                font-size: 12px;
+                font-weight: 500;
+            }
+        """)
+        time_filter_layout.addWidget(filter_label)
+
+        # 本周添加 - Fluent 风格链接
+        self.week_filter_label = QLabel("📅 本周添加")
+        self.week_filter_label.setStyleSheet("""
+            QLabel {
+                color: #0078D4;
+                font-size: 12px;
+                padding: 6px 12px;
+                border-radius: 6px;
+                background-color: transparent;
+            }
+            QLabel:hover {
+                background-color: #F3F3F3;
+                color: #005A9E;
+            }
+        """)
+        self.week_filter_label.setCursor(Qt.PointingHandCursor)
+        self.week_filter_label.mousePressEvent = lambda e: self.on_time_filter_clicked("week")
+        time_filter_layout.addWidget(self.week_filter_label)
+
+        # 本月添加 - Fluent 风格链接
+        self.month_filter_label = QLabel("📆 本月添加")
+        self.month_filter_label.setStyleSheet("""
+            QLabel {
+                color: #0078D4;
+                font-size: 12px;
+                padding: 6px 12px;
+                border-radius: 6px;
+                background-color: transparent;
+            }
+            QLabel:hover {
+                background-color: #F3F3F3;
+                color: #005A9E;
+            }
+        """)
+        self.month_filter_label.setCursor(Qt.PointingHandCursor)
+        self.month_filter_label.mousePressEvent = lambda e: self.on_time_filter_clicked("month")
+        time_filter_layout.addWidget(self.month_filter_label)
+
+        time_filter_layout.addStretch()
+        layout.addLayout(time_filter_layout)
 
         self.title_label = title_label
 
@@ -257,6 +472,24 @@ class MaterialCategoryWidget(QWidget):
 
         # 发送信号，传递分类类型和值
         self.category_selected.emit(category_type, category_value)
+
+    def on_time_filter_clicked(self, time_value):
+        """
+        时间过滤器被点击
+
+        Args:
+            time_value: 时间过滤值 ("week" 或 "month")
+        """
+        # 清除列表选中状态
+        self.list_widget.clearSelection()
+        self.current_category_id = None
+
+        # 禁用编辑和删除按钮
+        self.edit_btn.setEnabled(False)
+        self.delete_btn.setEnabled(False)
+
+        # 发送信号，传递时间过滤类型和值
+        self.category_selected.emit("time", time_value)
 
     def refresh(self):
         """刷新分类列表（重新计算文章数）"""

@@ -3,21 +3,14 @@
 用于新增和编辑素材库分类
 """
 from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QLabel, QLineEdit, QPushButton, QMessageBox,
-    QButtonGroup, QRadioButton
+    QDialog, QVBoxLayout, QHBoxLayout,
+    QLabel, QLineEdit, QPushButton, QMessageBox
 )
 from PyQt5.QtCore import Qt
 
 
 class CategoryDialog(QDialog):
     """分类管理对话框"""
-
-    # 预设图标列表
-    ICONS = [
-        "🎨", "📐", "🖌️", "✂️", "📷", "🎬",
-        "💼", "🏷️", "⭐", "📌", "💡", "🔖"
-    ]
 
     def __init__(self, parent=None, category_data=None, mode="add"):
         """
@@ -31,22 +24,29 @@ class CategoryDialog(QDialog):
         super().__init__(parent)
         self.category_data = category_data or {}
         self.mode = mode
-        self.selected_icon = self.category_data.get('icon', self.ICONS[0])
         self.init_ui()
 
     def init_ui(self):
-        """初始化UI"""
+        """初始化UI - Fluent Design 风格"""
         if self.mode == "add":
             self.setWindowTitle("➕ 新增素材分类")
         else:
             self.setWindowTitle("📝 编辑素材分类")
 
         self.setMinimumWidth(450)
-        self.setMinimumHeight(400)
+        self.setMinimumHeight(220)
         self.setModal(True)
 
+        # Fluent Design 风格背景
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #FAFAFA;
+            }
+        """)
+
         layout = QVBoxLayout(self)
-        layout.setSpacing(15)
+        layout.setSpacing(18)
+        layout.setContentsMargins(24, 24, 24, 24)
 
         # 分类名称输入
         name_label = QLabel("分类名称：")
@@ -54,73 +54,28 @@ class CategoryDialog(QDialog):
         layout.addWidget(name_label)
 
         self.name_edit = QLineEdit()
-        self.name_edit.setPlaceholderText("请输入分类名称，如：设计类")
-        self.name_edit.setFixedHeight(32)
+        self.name_edit.setPlaceholderText("请输入分类名称，如：设计类、营销类")
+        self.name_edit.setFixedHeight(40)
+        self.name_edit.setStyleSheet("""
+            QLineEdit {
+                background-color: white;
+                border: 2px solid #E0E0E0;
+                border-radius: 8px;
+                padding: 8px 12px;
+                font-size: 13px;
+                color: #333333;
+            }
+            QLineEdit:hover {
+                border-color: #B0B0B0;
+            }
+            QLineEdit:focus {
+                border-color: #0078D4;
+                background-color: #FFFFFF;
+            }
+        """)
         if self.mode == "edit":
             self.name_edit.setText(self.category_data.get('name', ''))
         layout.addWidget(self.name_edit)
-
-        # 图标选择
-        icon_label = QLabel("选择图标：")
-        icon_label.setStyleSheet("font-weight: bold; font-size: 13px;")
-        layout.addWidget(icon_label)
-
-        # 图标网格
-        icon_grid = QGridLayout()
-        icon_grid.setSpacing(10)
-
-        self.icon_group = QButtonGroup(self)
-        self.icon_buttons = []
-
-        for i, icon in enumerate(self.ICONS):
-            row = i // 6
-            col = i % 6
-
-            icon_btn = QRadioButton(icon)
-            icon_btn.setStyleSheet("""
-                QRadioButton {
-                    font-size: 24px;
-                    padding: 8px;
-                }
-                QRadioButton:hover {
-                    background-color: #E3F2FD;
-                    border-radius: 4px;
-                }
-                QRadioButton:checked {
-                    background-color: #2196F3;
-                    color: white;
-                    border-radius: 4px;
-                }
-            """)
-            icon_btn.toggled.connect(lambda checked, ic=icon: self.on_icon_selected(checked, ic))
-
-            # 默认选中
-            if icon == self.selected_icon:
-                icon_btn.setChecked(True)
-
-            self.icon_group.addButton(icon_btn, i)
-            self.icon_buttons.append(icon_btn)
-            icon_grid.addWidget(icon_btn, row, col)
-
-        layout.addLayout(icon_grid)
-
-        # 预览区域
-        preview_label = QLabel("预览效果：")
-        preview_label.setStyleSheet("font-weight: bold; font-size: 13px;")
-        layout.addWidget(preview_label)
-
-        self.preview_label = QLabel()
-        self.preview_label.setStyleSheet("""
-            QLabel {
-                font-size: 20px;
-                padding: 15px;
-                background-color: #F5F5F5;
-                border: 2px solid #E0E0E0;
-                border-radius: 8px;
-            }
-        """)
-        self.update_preview()
-        layout.addWidget(self.preview_label)
 
         # 提示信息
         if self.mode == "edit":
@@ -131,15 +86,40 @@ class CategoryDialog(QDialog):
         tip_label.setWordWrap(True)
         layout.addWidget(tip_label)
 
-        # 实时更新预览
-        self.name_edit.textChanged.connect(self.update_preview)
+        layout.addStretch()
 
         # 按钮
         button_layout = QHBoxLayout()
         button_layout.addStretch()
 
         cancel_btn = QPushButton("取消")
-        cancel_btn.setFixedSize(80, 32)
+        cancel_btn.setFixedSize(90, 38)
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #F5F5F5,
+                    stop:1 #E0E0E0
+                );
+                border: 1px solid #CCCCCC;
+                border-radius: 8px;
+                color: #333333;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #E0E0E0,
+                    stop:1 #D0D0D0
+                );
+                border-color: #999999;
+            }
+            QPushButton:pressed {
+                padding-top: 3px;
+                padding-bottom: 1px;
+            }
+        """)
         cancel_btn.clicked.connect(self.reject)
 
         if self.mode == "add":
@@ -147,20 +127,30 @@ class CategoryDialog(QDialog):
         else:
             confirm_btn = QPushButton("💾 保存")
 
-        confirm_btn.setFixedSize(80, 32)
+        confirm_btn.setFixedSize(90, 38)
         confirm_btn.setStyleSheet("""
             QPushButton {
-                background-color: #4CAF50;
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4CAF50,
+                    stop:1 #45A049
+                );
                 color: white;
                 border: none;
-                border-radius: 4px;
+                border-radius: 8px;
+                font-size: 13px;
                 font-weight: bold;
             }
             QPushButton:hover {
-                background-color: #45A049;
+                background: qlineargradient(
+                    x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #45A049,
+                    stop:1 #3D8B40
+                );
             }
             QPushButton:pressed {
-                background-color: #3D8B40;
+                padding-top: 3px;
+                padding-bottom: 1px;
             }
         """)
         confirm_btn.clicked.connect(self.on_confirm)
@@ -168,23 +158,6 @@ class CategoryDialog(QDialog):
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(confirm_btn)
         layout.addLayout(button_layout)
-
-    def on_icon_selected(self, checked, icon):
-        """
-        图标被选中
-
-        Args:
-            checked: 是否选中
-            icon: 图标字符
-        """
-        if checked:
-            self.selected_icon = icon
-            self.update_preview()
-
-    def update_preview(self):
-        """更新预览"""
-        name = self.name_edit.text().strip() or "分类名称"
-        self.preview_label.setText(f"{self.selected_icon} {name}")
 
     def on_confirm(self):
         """确认按钮点击"""
@@ -195,8 +168,8 @@ class CategoryDialog(QDialog):
             self.name_edit.setFocus()
             return
 
-        if len(name) > 10:
-            QMessageBox.warning(self, "提示", "分类名称不能超过10个字符！")
+        if len(name) > 20:
+            QMessageBox.warning(self, "提示", "分类名称不能超过20个字符！")
             self.name_edit.setFocus()
             return
 
@@ -213,6 +186,6 @@ class CategoryDialog(QDialog):
 
         return {
             'name': name,
-            'icon': self.selected_icon,
-            'display_name': f"{self.selected_icon} {name}"  # 用于显示的完整名称
+            'icon': '📁',  # 使用统一的默认图标
+            'display_name': f"📁 {name}"  # 用于显示的完整名称
         }
