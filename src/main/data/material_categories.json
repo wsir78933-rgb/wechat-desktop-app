@@ -1,0 +1,48 @@
+{
+  "system_categories": [
+    {
+      "id": "all",
+      "name": "📚 全部素材",
+      "type": "all",
+      "value": "",
+      "system": true
+    },
+    {
+      "id": "this_week",
+      "name": "📅 本周添加",
+      "type": "time",
+      "value": "week",
+      "system": true
+    },
+    {
+      "id": "this_month",
+      "name": "📆 本月添加",
+      "type": "time",
+      "value": "month",
+      "system": true
+    }
+  ],
+  "custom_categories": [
+    {
+      "id": "tech",
+      "name": "💻 科技类",
+      "type": "category",
+      "value": "科技",
+      "system": false
+    },
+    {
+      "id": "marketing",
+      "name": "📈 营销类",
+      "type": "category",
+      "value": "营销",
+      "system": false
+    },
+    {
+      "id": "operation",
+      "name": "⚙️ 运营类",
+      "type": "category",
+      "value": "运营",
+      "system": false
+    }
+  ]
+}
